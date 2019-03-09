@@ -1,4 +1,5 @@
-﻿using System.Windows;
+﻿using PlotsVisualizer.ViewModels;
+using System.Windows;
 
 namespace PlotsVisualizer
 {
@@ -10,6 +11,7 @@ namespace PlotsVisualizer
         public MainWindow()
         {
             InitializeComponent();
+            DataContext = new MainViewModel();
         }
     }
 }

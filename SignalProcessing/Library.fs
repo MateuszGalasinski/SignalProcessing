@@ -58,23 +58,44 @@ module SignalProcessing =
     
     //x depenedent generators
     let pointFromXFactory ySource : Complex -> Point =
-        fun v -> 
-            let point = {x = v; y = {r = ySource(v); i = 0.0}}
-            (point)
+        fun v -> {x = v; y = {r = ySource(v); i = 0.0}}
 
-    let sinGenerator (meta : SignalMetadata) : List<Complex> -> List<Point> =
-        let sinCalc = pointFromXFactory (fun x -> meta.amplitude * sin (2.0 * Math.PI * meta.samplingFrequency * (x.r - meta.startTime)))
+    let trigonometricGenerator (meta : SignalMetadata) trigFunc : List<Complex> -> List<Point> =
+        let sinCalc = pointFromXFactory (fun x -> meta.amplitude * trigFunc (2.0 * Math.PI * meta.samplingFrequency * (x.r - meta.startTime)))
         fun values -> values |> List.map sinCalc
 
+    let sinGenerator (meta : SignalMetadata) =
+        trigonometricGenerator meta sin
+
+    let halfRectifiedSinGenerator meta = 
+        let rectifier = fun (v : Point) -> 
+            {
+                x = v.x;
+                y = 
+                {
+                    r = (1.0/2.0 * v.y.r) + 1.0/2.0 * meta.amplitude * abs (sin (2.0 * Math.PI * meta.samplingFrequency * (v.x.r - meta.startTime)));
+                    i = v.y.i
+                } 
+            }
+        fun (points : List<Point>) -> points |> List.map rectifier
+
+    let stepResponse (meta : SignalMetadata) =
+        let pointCalc = pointFromXFactory (fun x -> 
+            if x.r > meta.startTime then
+                meta.amplitude
+            else if x.r = meta.startTime then
+                meta.amplitude / 2.0
+            else
+                0.0)
+        fun values -> values |> List.map pointCalc
+        
     let testGenerator = 
-        let amplitude = 10.0
+        let amplitude = 1.0
         let startTime = 0.0
-        let duration = 13.0
-        let samplingFreq = 3.0
+        let duration = 10.0
+        let samplingFreq = 1.0
         let dutyCycle = 10.0
         let meta : SignalMetadata = genMetadata amplitude duration samplingFreq startTime dutyCycle
-        let pointsGen = genPoints {meta with samplingFrequency = (16.0 * samplingFreq)}
-        genSignal meta (pointsGen (gaussianNoiseSource amplitude))
-        //if line = "sin" then 
-        //    genSignal meta (pointsGen (sinGenerator meta))
-        //    |> consolePrint
+        let pointsGen = genPoints {meta with samplingFrequency = (60.0 * samplingFreq)}
+        let signal = genSignal meta (pointsGen (sinGenerator meta))
+        {signal with points = (halfRectifiedSinGenerator meta) signal.points}

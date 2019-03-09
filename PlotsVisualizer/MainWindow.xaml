@@ -5,11 +5,10 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:PlotsVisualizer"
         xmlns:oxy="http://oxyplot.org/wpf"
+        xmlns:viewModels="clr-namespace:PlotsVisualizer.ViewModels"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="800" Width="1200">
     <Grid>
-        <oxy:PlotView Name="TestPlot">
-
-        </oxy:PlotView>
+        <oxy:PlotView Model="{Binding Model}" Margin="30,30,30,30" />
     </Grid>
 </Window>
