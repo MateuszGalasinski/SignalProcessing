@@ -1,5 +1,6 @@
-﻿namespace SignalGeneration
+﻿namespace SignalProcessing
 
+[<AutoOpen>]
 module Types =
     type Complex = 
         {

@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 15
 VisualStudioVersion = 15.0.28307.106
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "SignalGeneration", "SignalGeneration\SignalGeneration.fsproj", "{437E0C8B-1ABB-4BF1-9ED1-966E294E3C73}"
-EndProject
 Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "TestApp", "TestApp\TestApp.fsproj", "{8AAEECA5-C1D6-4368-8F39-DD289BCE6CB3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PlotsVisualizer", "PlotsVisualizer\PlotsVisualizer.csproj", "{ABBFF5E3-4E46-4967-8A85-4D040483422D}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "SignalProcessing", "SignalProcessing\SignalProcessing.fsproj", "{951A2A2D-6216-48BB-88B1-6E3950697206}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -13,14 +15,18 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{437E0C8B-1ABB-4BF1-9ED1-966E294E3C73}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{437E0C8B-1ABB-4BF1-9ED1-966E294E3C73}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{437E0C8B-1ABB-4BF1-9ED1-966E294E3C73}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{437E0C8B-1ABB-4BF1-9ED1-966E294E3C73}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8AAEECA5-C1D6-4368-8F39-DD289BCE6CB3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{8AAEECA5-C1D6-4368-8F39-DD289BCE6CB3}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8AAEECA5-C1D6-4368-8F39-DD289BCE6CB3}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8AAEECA5-C1D6-4368-8F39-DD289BCE6CB3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ABBFF5E3-4E46-4967-8A85-4D040483422D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ABBFF5E3-4E46-4967-8A85-4D040483422D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ABBFF5E3-4E46-4967-8A85-4D040483422D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ABBFF5E3-4E46-4967-8A85-4D040483422D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{951A2A2D-6216-48BB-88B1-6E3950697206}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{951A2A2D-6216-48BB-88B1-6E3950697206}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{951A2A2D-6216-48BB-88B1-6E3950697206}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{951A2A2D-6216-48BB-88B1-6E3950697206}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

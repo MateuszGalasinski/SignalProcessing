@@ -1,9 +1,8 @@
-namespace SignalGeneration
+namespace SignalProcessing
 
-open Types
 open System
 
-module SignalGeneration = 
+module SignalProcessing = 
     
     let consolePrint (signal : Signal) = 
         signal.points |> List.iter (fun p -> printfn "x.r %f x.i %f || y.r %f y.i %f" p.x.r p.x.i p.y.r p.y.i)
@@ -25,9 +24,9 @@ module SignalGeneration =
         }
 
     let generateXValues duration samplingFreq startTime : List<Complex> =
-        let interval = 1.0 / samplingFreq
+        let step = 1.0 / samplingFreq
         [
-            for x in startTime..interval..(startTime+duration) do
+            for x in startTime..step..(startTime+duration) do
                 yield { r = x; i = 0.0 }
         ]
     
