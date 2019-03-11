@@ -46,6 +46,7 @@ namespace PlotsVisualizer.ViewModels
         public IRaiseCanExecuteCommand PreviousPlotCommand { get; }
         public IRaiseCanExecuteCommand SavePlotCommand { get; }
         public IRaiseCanExecuteCommand LoadPlotCommand { get; }
+        public IRaiseCanExecuteCommand DeleteCommand { get; }
 
         public MainViewModel()
         {
@@ -53,6 +54,7 @@ namespace PlotsVisualizer.ViewModels
             PreviousPlotCommand =  new RelayCommand(MoveToPreviousPlot);
             SavePlotCommand =  new RelayCommand(SaveToFile);
             LoadPlotCommand =  new RelayCommand(LoadFromFile);
+            DeleteCommand =  new RelayCommand(DeleteCurrent);
 
             AddExamplePlot(1);
             MoveToNextPlot();
@@ -122,6 +124,29 @@ namespace PlotsVisualizer.ViewModels
             SystemSounds.Beep.Play();
         }
         #endregion
+
+        private void DeleteCurrent()
+        {
+            if (CurrentPlotIndex >= 0)
+            {
+                Plots.Remove(Plots[CurrentPlotIndex]);
+                CurrentPlotIndex--;
+                PlotsCount = Plots.Count - 1;
+                if (CurrentPlotIndex >= 0)
+                {
+                    CurrentPlotModel = Plots[CurrentPlotIndex].plot;
+                }
+                else
+                {
+                    CurrentPlotModel = null;
+                }
+            }
+            else
+            {
+                SystemSounds.Beep.Play();
+            }
+
+        }
 
         private void AddPlot(PlotModel plot, FSharpList<Types.Point> points)
         {
