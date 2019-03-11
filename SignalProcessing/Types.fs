@@ -14,7 +14,20 @@ module Types =
             y : Complex
         }
 
-     type SignalMetadata =
+    type SignalType = 
+        | RandomNoise = 0
+        | GaussianNoise = 1
+        | Sin = 2
+        | SinHalfRectified = 3
+        | SinFullyRectified = 4
+        | Rectangle = 5
+        | RectangleSymmetric = 6
+        | Triangle = 7
+        | StepResponse = 8
+        | ImpulseResponse = 9 
+        | ImpulseNoise = 10
+
+    type SignalMetadata =
         {
             amplitude : float
             startTime : float
@@ -23,7 +36,7 @@ module Types =
             samplingFrequency : float
         }
 
-     type Signal = 
+    type Signal = 
         {
             points : list<Point>
             metadata : SignalMetadata 

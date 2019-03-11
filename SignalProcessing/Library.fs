@@ -89,8 +89,7 @@ module SignalProcessing =
                 0.0)
         fun values -> values |> List.map pointCalc
         
-    let testGenerator = 
-        let amplitude = 1.0
+    let testGenerator amplitude = 
         let startTime = 0.0
         let duration = 10.0
         let samplingFreq = 1.0

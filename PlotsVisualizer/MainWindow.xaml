@@ -7,8 +7,40 @@
         xmlns:oxy="http://oxyplot.org/wpf"
         xmlns:viewModels="clr-namespace:PlotsVisualizer.ViewModels"
         mc:Ignorable="d"
-        Title="MainWindow" Height="800" Width="1200">
+        Title="MainWindow" Height="800" Width="1200"
+        Background="SlateGray">
     <Grid>
-        <oxy:PlotView Model="{Binding Model}" Margin="30,30,30,30" />
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="10*"></RowDefinition>
+        </Grid.RowDefinitions>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="1*"></ColumnDefinition>
+            <ColumnDefinition Width="2*"></ColumnDefinition>
+            <ColumnDefinition Width="2*"></ColumnDefinition>
+            <ColumnDefinition Width="12*"></ColumnDefinition>
+        </Grid.ColumnDefinitions>
+        <Button Content="Previous plot" Command="{Binding PreviousPlotCommand}" Grid.Row="1" Grid.Column="1" Background="PaleGoldenrod"></Button>
+        <Button Content="Next plot" Command="{Binding NextPlotCommand}" Grid.Row="1" Grid.Column="2" Background="PaleGoldenrod"></Button>
+
+        <Button Content="Save to file" Command="{Binding SavePlotCommand}" Grid.Row="2" Grid.Column="1" Background="Goldenrod"></Button>
+        <Button Content="Load from file" Command="{Binding LoadPlotCommand}" Grid.Row="2" Grid.Column="2" Background="Goldenrod"></Button>
+        <TextBlock Text="Enter file name to save to or load from below: " FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="1" Grid.Column="3"></TextBlock>
+        <TextBox Text="{Binding FileName}" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="2" Grid.Column="3"></TextBox>
+
+        <TextBlock FontSize="20" HorizontalAlignment="Center" Foreground="Goldenrod" VerticalAlignment="Center" Grid.Row="3" Grid.Column="1">Plot number -> </TextBlock>
+        <TextBlock FontSize="20" Foreground="Goldenrod" HorizontalAlignment="Center"  VerticalAlignment="Center" Grid.Row="3" Grid.Column="2">
+            <TextBlock.Text>
+                <MultiBinding StringFormat="{}{0}/{1}">
+                    <Binding Path="CurrentPlotIndex" />
+                    <Binding Path="PlotsCount"/>
+                </MultiBinding>
+            </TextBlock.Text>
+        </TextBlock>
+
+        <oxy:PlotView Grid.Row="4" Grid.ColumnSpan="4" Model="{Binding CurrentPlotModel}" Margin="30,30,30,30" />
     </Grid>
 </Window>
