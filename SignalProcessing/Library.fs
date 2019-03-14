@@ -67,6 +67,9 @@ module SignalProcessing =
     let sinGenerator (meta : SignalMetadata) =
         trigonometricGenerator meta sin
 
+    let fullRectifiedSinGenerator (meta : SignalMetadata) =
+        trigonometricGenerator meta (fun x -> abs (sin x))
+
     let halfRectifiedSinGenerator meta = 
         let rectifier = fun (v : Point) -> 
             {
@@ -86,15 +89,32 @@ module SignalProcessing =
             else if x.r = meta.startTime then
                 meta.amplitude / 2.0
             else
-                0.0)
+                0.0 )
+        fun values -> values |> List.map pointCalc
+
+    let rectangleResponse (meta : SignalMetadata) =
+        let pointCalc = pointFromXFactory (fun x -> 
+            let absTimeToFreqRatio = (x.r - meta.startTime) / meta.samplingFrequency
+            if absTimeToFreqRatio - (float (int absTimeToFreqRatio)) < meta.dutyCycle then
+                meta.amplitude
+            else
+                0.0 )
         fun values -> values |> List.map pointCalc
         
+    let rectangleSymmetricResponse (meta : SignalMetadata) =
+        let pointCalc = pointFromXFactory (fun x -> 
+            let absTimeToFreqRatio = (x.r - meta.startTime) / meta.samplingFrequency
+            if absTimeToFreqRatio - (float (int absTimeToFreqRatio)) < meta.dutyCycle then
+                meta.amplitude
+            else
+                - meta.amplitude )
+        fun values -> values |> List.map pointCalc
+
     let testGenerator amplitude = 
         let startTime = 0.0
         let duration = 10.0
         let samplingFreq = 1.0
-        let dutyCycle = 10.0
+        let dutyCycle = 0.5
         let meta : SignalMetadata = genMetadata amplitude duration samplingFreq startTime dutyCycle
         let pointsGen = genPoints {meta with samplingFrequency = (60.0 * samplingFreq)}
-        let signal = genSignal meta (pointsGen (sinGenerator meta))
-        {signal with points = (halfRectifiedSinGenerator meta) signal.points}
+        genSignal meta (pointsGen (rectangleSymmetricResponse meta))
