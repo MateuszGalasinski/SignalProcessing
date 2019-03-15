@@ -6,6 +6,8 @@
         xmlns:local="clr-namespace:PlotsVisualizer"
         xmlns:oxy="http://oxyplot.org/wpf"
         xmlns:viewModels="clr-namespace:PlotsVisualizer.ViewModels"
+        xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
+        xmlns:helpers="clr-namespace:PlotsVisualizer.Helpers"
         mc:Ignorable="d"
         Title="MainWindow" Height="800" Width="1200"
         Background="SlateGray">
@@ -24,17 +26,29 @@
             <ColumnDefinition Width="2*"></ColumnDefinition>
             <ColumnDefinition Width="2*"></ColumnDefinition>
             <ColumnDefinition Width="2*"></ColumnDefinition>
-            <ColumnDefinition Width="12*"></ColumnDefinition>
+            <ColumnDefinition Width="2*"></ColumnDefinition>
+            <ColumnDefinition Width="2*"></ColumnDefinition>
+            <ColumnDefinition Width="2*"></ColumnDefinition>
+            <ColumnDefinition Width="2*"></ColumnDefinition>
+            <ColumnDefinition Width="2*"></ColumnDefinition>
+            <ColumnDefinition Width="2*"></ColumnDefinition>
+            <ColumnDefinition Width="1*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
-        <Button Content="Previous plot" Command="{Binding PreviousPlotCommand}" Grid.Row="1" Grid.Column="1" Background="PaleGoldenrod"></Button>
-        <Button Content="Next plot" Command="{Binding NextPlotCommand}" Grid.Row="1" Grid.Column="2" Background="PaleGoldenrod"></Button>
 
         <Button Content="Save to file" Command="{Binding SavePlotCommand}" Grid.Row="2" Grid.Column="1" Background="Goldenrod"></Button>
         <Button Content="Load from file" Command="{Binding LoadPlotCommand}" Grid.Row="2" Grid.Column="2" Background="Goldenrod"></Button>
-        <TextBlock Text="Enter file name to save to or load from below: " FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="1" Grid.Column="4"></TextBlock>
-        <TextBox Text="{Binding FileName}" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="2" Grid.Column="4"></TextBox>
+        <TextBlock Text="Save/Read file name: " FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2"></TextBlock>
+        <TextBox Text="{Binding FileName, Mode=OneWay}" FontSize="16" MinWidth="200" MaxWidth="200"
+                 HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"
+                 IsReadOnly="True">
+            <i:Interaction.Triggers>
+                <i:EventTrigger EventName="MouseDoubleClick" >
+                    <i:InvokeCommandAction Command="{Binding ReadFilePathCommand}" />
+                </i:EventTrigger>
+            </i:Interaction.Triggers>
+        </TextBox>
 
-        <TextBlock FontSize="20" HorizontalAlignment="Center" Foreground="Goldenrod" VerticalAlignment="Center" Grid.Row="3" Grid.Column="1">Plot number -> </TextBlock>
+        <TextBlock FontSize="16" HorizontalAlignment="Center" Foreground="Goldenrod" VerticalAlignment="Center" Grid.Row="3" Grid.Column="1">Plot number -> </TextBlock>
         <TextBlock FontSize="20" Foreground="Goldenrod" HorizontalAlignment="Center"  VerticalAlignment="Center" Grid.Row="3" Grid.Column="2">
             <TextBlock.Text>
                 <MultiBinding StringFormat="{}{0}/{1}">
@@ -44,8 +58,45 @@
             </TextBlock.Text>
         </TextBlock>
 
-        <oxy:PlotView Grid.Row="4" Grid.RowSpan="3" Grid.ColumnSpan="5" Model="{Binding CurrentPlotModel}" Margin="30,30,30,30" />
+        <!--#region New signal -->
+        <Rectangle Fill="Gainsboro" Grid.Row="0" Grid.RowSpan="3" Grid.Column="4" Grid.ColumnSpan="6"/>
 
-        <Button Content="Delete" Command="{Binding DeleteCommand}" Grid.Row="5" Grid.Column="1" Margin="10" Background="DarkGoldenrod"></Button>
+        <TextBlock FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Goldenrod" Grid.Row="0" Grid.Column="4">Amplitude</TextBlock>
+        <TextBox FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Goldenrod" MinWidth="80" MaxWidth="80" Grid.Row="1" Grid.Column="4"
+                 Text="{Binding Amplitude}"></TextBox>
+
+        <TextBlock FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Goldenrod" Grid.Row="0" Grid.Column="5">StartTime</TextBlock>
+        <TextBox FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Goldenrod" MinWidth="80" MaxWidth="80" Grid.Row="1" Grid.Column="5"
+                 Text="{Binding StartTime}"></TextBox>
+
+        <TextBlock FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Goldenrod" Grid.Row="0" Grid.Column="6">Duration</TextBlock>
+        <TextBox FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Goldenrod" MinWidth="80" MaxWidth="80" Grid.Row="1" Grid.Column="6"
+                 Text="{Binding Duration}"></TextBox>
+
+        <TextBlock FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Goldenrod" Grid.Row="0" Grid.Column="7">DutyCycle</TextBlock>
+        <TextBox FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Goldenrod" MinWidth="80" MaxWidth="80" Grid.Row="1" Grid.Column="7"
+                 Text="{Binding DutyCycle}"></TextBox>
+
+        <TextBlock FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Goldenrod" Grid.Row="0" Grid.Column="8">SignalFrequency</TextBlock>
+        <TextBox FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Goldenrod" MinWidth="80" MaxWidth="80" Grid.Row="1" Grid.Column="8"
+                 Text="{Binding SignalFrequency}"></TextBox>
+
+        <TextBlock FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Goldenrod" Grid.Row="0" Grid.Column="9">SamplingFrequency</TextBlock>
+        <TextBox FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Goldenrod" MinWidth="80" MaxWidth="80" Grid.Row="1" Grid.Column="9"
+                 Text="{Binding SamplingFrequency}"></TextBox>
+
+        <ComboBox Grid.Row="2" Grid.Column="8" FontSize="20" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                  ItemsSource="{Binding Path=SignalType, Converter={helpers:EnumToCollectionConverter}, Mode=OneTime}"
+                  SelectedValue="{Binding Path=SignalType}" />
+
+        <Button Content="Add plot" Command="{Binding AddCommand}" Grid.Row="2" Grid.Column="9" Background="PaleGoldenrod"></Button>
+        <!--#endregion-->
+
+        <oxy:PlotView Grid.Row="4" Grid.RowSpan="3" Grid.ColumnSpan="12" Model="{Binding CurrentPlotModel}" Margin="20,30,20,30" />
+
+        <Button Content="Previous plot" Command="{Binding PreviousPlotCommand}" Grid.Row="5" Grid.Column="1" Background="PaleGoldenrod"></Button>
+        <Button Content="Next plot" Command="{Binding NextPlotCommand}" Grid.Row="5" Grid.Column="2" Background="PaleGoldenrod"></Button>
+
+        <Button Content="Delete" Command="{Binding DeleteCommand}" Grid.Row="5" Grid.Column="9" Margin="10" Background="DarkGoldenrod"></Button>
     </Grid>
 </Window>

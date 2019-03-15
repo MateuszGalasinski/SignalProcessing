@@ -33,6 +33,7 @@ module Types =
             startTime : float
             duration : float
             dutyCycle : float
+            signalFrequency : float
             samplingFrequency : float
         }
 
