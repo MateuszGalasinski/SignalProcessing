@@ -57,6 +57,14 @@ module SignalProcessing =
             //TODO check super random 
         generatePoints meta.amplitude randomSource
     
+    let impulseNoiseResponse (meta : SignalMetadata) =
+        let random = System.Random()
+        generatePoints meta.amplitude (fun _ -> 
+            if random.NextDouble() < meta.dutyCycle then
+                meta.amplitude
+            else
+                0.0 )
+
     //x depenedent generators
     let pointFromXFactory ySource : Complex -> Point =
         fun v -> {x = v; y = {r = ySource(v); i = 0.0}}
@@ -73,6 +81,14 @@ module SignalProcessing =
 
     let halfRectifiedSinGenerator meta = 
          trigonometricGenerator meta (fun x -> 0.5 * ((sin x) + abs (sin x)))
+
+    let impulseResponse (meta : SignalMetadata) =
+        let pointCalc = pointFromXFactory (fun x -> 
+            if x.r = 0.0 then
+                1.0
+            else
+                0.0 )
+        fun values -> values |> List.map pointCalc
 
     let stepResponse (meta : SignalMetadata) =
         let pointCalc = pointFromXFactory (fun x -> 
@@ -102,6 +118,20 @@ module SignalProcessing =
                 -meta.amplitude )
         fun values -> values |> List.map pointCalc
 
+    let triangleResponse (meta : SignalMetadata) =
+        let oneMinusDuty = 1.0-meta.dutyCycle
+        let ampOverDuty = meta.amplitude / meta.dutyCycle
+        let period = 1.0 / meta.signalFrequency
+        let pointCalc = pointFromXFactory (fun x -> 
+            let relX = x.r - (float (int (x.r / period)) * period)
+            let absTimeToPeriodRatio = (x.r - meta.startTime) * period
+            if absTimeToPeriodRatio - (float (int absTimeToPeriodRatio)) < meta.dutyCycle then
+                 ampOverDuty * (relX - meta.startTime) / period
+            else
+                ((meta.amplitude) / oneMinusDuty) + ((-meta.amplitude / oneMinusDuty) * ((relX - meta.startTime) / period))
+            )
+        fun values -> values |> List.map pointCalc
+
     let testGenerator amplitude = 
         let startTime = 0.0
         let duration = 10.0
@@ -121,10 +151,10 @@ module SignalProcessing =
         | SignalType.SinFullyRectified -> fullRectifiedSinGenerator
         | SignalType.Rectangle -> rectangleResponse
         | SignalType.RectangleSymmetric -> rectangleSymmetricResponse
-        //| SignalType.Triangle -> sinGenerator
+        | SignalType.Triangle -> triangleResponse
         | SignalType.StepResponse -> stepResponse
-        //| SignalType.ImpulseResponse -> sinGenerator
-        //| SignalType.ImpulseNoise -> sinGenerator
+        | SignalType.ImpulseResponse -> impulseResponse
+        | SignalType.ImpulseNoise -> impulseNoiseResponse
 
     let signalGenerator meta signalType = 
         let pointsGen = genPoints meta

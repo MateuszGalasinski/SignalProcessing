@@ -19,12 +19,12 @@ namespace PlotsVisualizer.ViewModels
         private int _currentPlotIndex = -1;
         private string _fileName = "currentPlot";
         private int _plotsCount = 0;
-        private double _amplitude = 2;
+        private double _amplitude = 1;
         private double _startTime = 0;
-        private double _duration = 3;
+        private double _duration = 5;
         private double _dutyCycle = 0.5;
-        private double _signalFrequency = 40;
-        private double _samplingFrequency = 60_00;
+        private double _signalFrequency = 1;
+        private double _samplingFrequency = 100;
         private Types.SignalType _signalType;
 
         public List<(PlotModel plot, FSharpList<Types.Point> points)> Plots { get; } = new List <(PlotModel plot, FSharpList<Types.Point> points) >();
@@ -245,6 +245,8 @@ namespace PlotsVisualizer.ViewModels
             AddPlot(
                 CreatePlot(signal.points, $"{SignalType} A: {Amplitude:0.##} f_sig: {SignalFrequency:0.##} f_sam: {SamplingFrequency:0.##}"),
                 signal.points);
+
+            SystemSounds.Beep.Play();
         }
 
     }
