@@ -19,6 +19,7 @@
             <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="10*"></RowDefinition>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
@@ -48,15 +49,7 @@
             </i:Interaction.Triggers>
         </TextBox>
 
-        <TextBlock FontSize="16" HorizontalAlignment="Center" Foreground="Goldenrod" VerticalAlignment="Center" Grid.Row="3" Grid.Column="1">Plot number -> </TextBlock>
-        <TextBlock FontSize="20" Foreground="Goldenrod" HorizontalAlignment="Center"  VerticalAlignment="Center" Grid.Row="3" Grid.Column="2">
-            <TextBlock.Text>
-                <MultiBinding StringFormat="{}{0}/{1}">
-                    <Binding Path="CurrentPlotIndex" />
-                    <Binding Path="PlotsCount"/>
-                </MultiBinding>
-            </TextBlock.Text>
-        </TextBlock>
+        <!--<TextBlock FontSize="16" HorizontalAlignment="Center" Foreground="Goldenrod" VerticalAlignment="Center" Grid.Row="3" Grid.Column="1">Plot number -> </TextBlock>-->
 
         <!--#region New signal -->
         <Rectangle Fill="Gainsboro" Grid.Row="0" Grid.RowSpan="3" Grid.Column="4" Grid.ColumnSpan="6"/>
@@ -92,11 +85,33 @@
         <Button Content="Add plot" Command="{Binding AddCommand}" Grid.Row="2" Grid.Column="9" Background="PaleGoldenrod"></Button>
         <!--#endregion-->
 
-        <oxy:PlotView Grid.Row="4" Grid.RowSpan="3" Grid.ColumnSpan="12" Model="{Binding CurrentPlotModel}" Margin="20,30,20,30" />
+        <TextBlock FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="3" Grid.Column="1" Grid.ColumnSpan="2">Choose signals to operate on</TextBlock>
+        <TextBox FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"  MinWidth="80" MaxWidth="80" Grid.Row="4" Grid.Column="1"
+                 Text="{Binding Amplitude}"></TextBox>
+        <TextBox FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"  MinWidth="80" MaxWidth="80" Grid.Row="4" Grid.Column="2"
+                 Text="{Binding Amplitude}"></TextBox>
 
-        <Button Content="Previous plot" Command="{Binding PreviousPlotCommand}" Grid.Row="5" Grid.Column="1" Background="PaleGoldenrod"></Button>
-        <Button Content="Next plot" Command="{Binding NextPlotCommand}" Grid.Row="5" Grid.Column="2" Background="PaleGoldenrod"></Button>
+        <Button Content="+" Command="{Binding DeleteCommand}" FontSize="22" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Grid.Row="4" Grid.Column="4" Background="Goldenrod"></Button>
+        <Button Content="-" Command="{Binding DeleteCommand}" FontSize="22" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Grid.Row="4" Grid.Column="5" Background="Goldenrod"></Button>
+        <Button Content="*" Command="{Binding DeleteCommand}" FontSize="22" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Grid.Row="4" Grid.Column="6" Background="Goldenrod"></Button>
+        <Button Content="/" Command="{Binding DeleteCommand}" FontSize="22" VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Grid.Row="4" Grid.Column="7" Background="Goldenrod"></Button>
 
-        <Button Content="Delete" Command="{Binding DeleteCommand}" Grid.Row="5" Grid.Column="9" Margin="10" Background="DarkGoldenrod"></Button>
+
+        <oxy:PlotView Grid.Row="5" Grid.RowSpan="3" Grid.ColumnSpan="12" Model="{Binding CurrentPlot.PlotModel}" Margin="20,30,20,30" />
+
+        <!--#region plots navigation -->
+        <TextBlock FontSize="20" HorizontalAlignment="Center"  VerticalAlignment="Center" Grid.Row="6" Grid.Column="1">
+            <TextBlock.Text>
+                <MultiBinding StringFormat="{}{0}/{1}">
+                    <Binding Path="CurrentPlotIndex" />
+                    <Binding Path="PlotsCount"/>
+                </MultiBinding>
+            </TextBlock.Text>
+        </TextBlock>
+        <Button Content="Previous plot" Command="{Binding PreviousPlotCommand}" Grid.Row="6" Grid.Column="2" Background="PaleGoldenrod"></Button>
+        <Button Content="Next plot" Command="{Binding NextPlotCommand}" Grid.Row="6" Grid.Column="3" Background="PaleGoldenrod"></Button>
+        <!--#endregion-->
+
+        <Button Content="Delete" Command="{Binding DeleteCommand}" Grid.Row="6" Grid.Column="9" Margin="10" Background="DarkGoldenrod"></Button>
     </Grid>
 </Window>

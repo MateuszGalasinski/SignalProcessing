@@ -2,6 +2,7 @@
 using Microsoft.Win32;
 using OxyPlot;
 using OxyPlot.Series;
+using PlotsVisualizer.Models;
 using SignalProcessing;
 using System;
 using System.Collections.Generic;
@@ -15,7 +16,7 @@ namespace PlotsVisualizer.ViewModels
 {
     class MainViewModel : BindableBase
     {
-        private PlotModel _currentPlotModel;
+        private Plot _currentPlotModel;
         private int _currentPlotIndex = -1;
         private string _fileName = "currentPlot";
         private int _plotsCount = 0;
@@ -27,15 +28,15 @@ namespace PlotsVisualizer.ViewModels
         private double _samplingFrequency = 100;
         private Types.SignalType _signalType;
 
-        public List<(PlotModel plot, FSharpList<Types.Point> points)> Plots { get; } = new List <(PlotModel plot, FSharpList<Types.Point> points) >();
+        public List<Plot> Plots { get; } = new List <Plot>();
 
-        //observable props
+        #region observable props
         public int CurrentPlotIndex
         {
             get => _currentPlotIndex;
             private set => SetProperty(ref _currentPlotIndex, value);
         }
-        public PlotModel CurrentPlotModel
+        public Plot CurrentPlot
         {
             get => _currentPlotModel;
             private set => SetProperty(ref _currentPlotModel, value);
@@ -89,6 +90,7 @@ namespace PlotsVisualizer.ViewModels
             get => _signalType;
             set => SetProperty(ref _signalType, value);
         }
+        #endregion
 
         public IRaiseCanExecuteCommand NextPlotCommand { get; }
         public IRaiseCanExecuteCommand PreviousPlotCommand { get; }
@@ -119,7 +121,7 @@ namespace PlotsVisualizer.ViewModels
             if (CurrentPlotIndex + 1 < Plots.Count)
             {
                 CurrentPlotIndex++;
-                CurrentPlotModel = Plots[CurrentPlotIndex].plot;
+                CurrentPlot = Plots[CurrentPlotIndex];
             }
             else
             {
@@ -132,7 +134,7 @@ namespace PlotsVisualizer.ViewModels
             if (CurrentPlotIndex > 0)
             {
                 CurrentPlotIndex--;
-                CurrentPlotModel = Plots[CurrentPlotIndex].plot;
+                CurrentPlot = Plots[CurrentPlotIndex];
             }
             else
             {
@@ -145,7 +147,7 @@ namespace PlotsVisualizer.ViewModels
             if (Plots.Count > index)
             {
                 CurrentPlotIndex = index;
-                CurrentPlotModel = Plots[CurrentPlotIndex].plot;
+                CurrentPlot = Plots[CurrentPlotIndex];
             }
         }
         #endregion
@@ -164,7 +166,7 @@ namespace PlotsVisualizer.ViewModels
             using (var fileStream = new FileStream(Path.Combine(Directory.GetCurrentDirectory(), FileName), FileMode.Create))
             {
                 var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-                var pointsToSave = Plots[CurrentPlotIndex].points;
+                var pointsToSave = Plots[CurrentPlotIndex].Points;
                 binaryFormatter.Serialize(fileStream, pointsToSave);
             }
             SystemSounds.Beep.Play();
@@ -203,11 +205,11 @@ namespace PlotsVisualizer.ViewModels
                 PlotsCount = Plots.Count - 1;
                 if (CurrentPlotIndex >= 0)
                 {
-                    CurrentPlotModel = Plots[CurrentPlotIndex].plot;
+                    CurrentPlot = Plots[CurrentPlotIndex];
                 }
                 else
                 {
-                    CurrentPlotModel = null;
+                    CurrentPlot = null;
                 }
             }
             else
@@ -219,7 +221,11 @@ namespace PlotsVisualizer.ViewModels
 
         private void AddPlot(PlotModel plot, FSharpList<Types.Point> points)
         {
-            Plots.Add((plot, points));
+            Plots.Add(new Plot()
+            {
+                PlotModel = plot,
+                Points = points
+            });
             PlotsCount = Plots.Count - 1;
         }
 

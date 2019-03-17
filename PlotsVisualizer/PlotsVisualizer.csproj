@@ -75,6 +75,7 @@
     <Compile Include="Base\RelayCommand.cs" />
     <Compile Include="Helpers\EnumHelper.cs" />
     <Compile Include="Helpers\EnumToCollectionConverter.cs" />
+    <Compile Include="Models\Plot.cs" />
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Page Include="MainWindow.xaml">
       <Generator>MSBuild:Compile</Generator>
@@ -125,5 +126,6 @@
   <ItemGroup>
     <WCFMetadata Include="Connected Services\" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
