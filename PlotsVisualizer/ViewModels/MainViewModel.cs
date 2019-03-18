@@ -27,6 +27,8 @@ namespace PlotsVisualizer.ViewModels
         private double _signalFrequency = 1;
         private double _samplingFrequency = 100;
         private Types.SignalType _signalType;
+        private int _firstChosenPlot = 0;
+        private int _secondChosenPlot = 0;
 
         public List<Plot> Plots { get; } = new List <Plot>();
 
@@ -90,8 +92,19 @@ namespace PlotsVisualizer.ViewModels
             get => _signalType;
             set => SetProperty(ref _signalType, value);
         }
+        public int FirstChosenPlot
+        {
+            get => _firstChosenPlot;
+            set => SetProperty(ref _firstChosenPlot, value);
+        }
+        public int SecondChosenPlot
+        {
+            get => _secondChosenPlot;
+            set => SetProperty(ref _secondChosenPlot, value);
+        }
         #endregion
 
+        #region Commands
         public IRaiseCanExecuteCommand NextPlotCommand { get; }
         public IRaiseCanExecuteCommand PreviousPlotCommand { get; }
 
@@ -99,8 +112,14 @@ namespace PlotsVisualizer.ViewModels
         public IRaiseCanExecuteCommand SavePlotCommand { get; }
         public IRaiseCanExecuteCommand LoadPlotCommand { get; }
 
-        public IRaiseCanExecuteCommand AddCommand { get; }
+        public IRaiseCanExecuteCommand AddPlotCommand { get; }
         public IRaiseCanExecuteCommand DeleteCommand { get; }
+
+        public IRaiseCanExecuteCommand AddCommand { get; }
+        public IRaiseCanExecuteCommand SubstractCommand { get; }
+        public IRaiseCanExecuteCommand MultiplyCommand { get; }
+        public IRaiseCanExecuteCommand DivideCommand { get; }
+        #endregion
 
         public MainViewModel()
         {
@@ -109,8 +128,12 @@ namespace PlotsVisualizer.ViewModels
             ReadFilePathCommand =  new RelayCommand(ReadFilePath);
             SavePlotCommand =  new RelayCommand(SaveToFile, () => !string.IsNullOrWhiteSpace(FileName));
             LoadPlotCommand =  new RelayCommand(LoadFromFile, () => File.Exists(FileName));
-            AddCommand =  new RelayCommand(AddNewPlot);
-            DeleteCommand =  new RelayCommand(DeleteCurrent);
+            AddPlotCommand =  new RelayCommand(AddNewPlot);
+            DeleteCommand =  new RelayCommand(() => RemovePlot(CurrentPlotIndex));
+            AddCommand = new RelayCommand(() => PlotOperate(Operations.OperationType.Addition));
+            SubstractCommand = new RelayCommand(() => PlotOperate(Operations.OperationType.Substraction));
+            MultiplyCommand = new RelayCommand(() => PlotOperate(Operations.OperationType.Multiplication));
+            DivideCommand = new RelayCommand(() => PlotOperate(Operations.OperationType.Division));
 
             SignalType = Types.SignalType.Sin;
         }
@@ -166,7 +189,7 @@ namespace PlotsVisualizer.ViewModels
             using (var fileStream = new FileStream(Path.Combine(Directory.GetCurrentDirectory(), FileName), FileMode.Create))
             {
                 var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-                var pointsToSave = Plots[CurrentPlotIndex].Points;
+                var pointsToSave = Plots[CurrentPlotIndex].Signal.points;
                 binaryFormatter.Serialize(fileStream, pointsToSave);
             }
             SystemSounds.Beep.Play();
@@ -183,7 +206,8 @@ namespace PlotsVisualizer.ViewModels
                     points = (FSharpList<Types.Point>)binaryFormatter.Deserialize(fileStream);
                 }
 
-                AddPlot(CreatePlot(points, "Loaded from file"), points);
+                //TODO: check metadata save/load
+                AddPlot(CreatePlot(points, "Loaded from file"), new Types.Signal(points, null));
                 MoveToPlot(Plots.Count - 1);
             }
             catch (Exception e)
@@ -196,13 +220,17 @@ namespace PlotsVisualizer.ViewModels
         }
         #endregion
 
-        private void DeleteCurrent()
+        private void RemovePlot(int index)
         {
-            if (CurrentPlotIndex >= 0)
+            if (index >= 0 && index <= PlotsCount)
             {
-                Plots.Remove(Plots[CurrentPlotIndex]);
-                CurrentPlotIndex--;
+                Plots.Remove(Plots[index]);
                 PlotsCount = Plots.Count - 1;
+
+                if (CurrentPlotIndex >= Plots.Count)
+                {
+                    CurrentPlotIndex--;
+                }
                 if (CurrentPlotIndex >= 0)
                 {
                     CurrentPlot = Plots[CurrentPlotIndex];
@@ -216,17 +244,17 @@ namespace PlotsVisualizer.ViewModels
             {
                 SystemSounds.Beep.Play();
             }
-
         }
 
-        private void AddPlot(PlotModel plot, FSharpList<Types.Point> points)
+        private void AddPlot(PlotModel plot, Types.Signal signal)
         {
             Plots.Add(new Plot()
             {
                 PlotModel = plot,
-                Points = points
+                Signal = signal
             });
             PlotsCount = Plots.Count - 1;
+            MoveToPlot(PlotsCount);
         }
 
         private PlotModel CreatePlot(FSharpList<Types.Point> points, string title)
@@ -250,9 +278,41 @@ namespace PlotsVisualizer.ViewModels
 
             AddPlot(
                 CreatePlot(signal.points, $"{SignalType} A: {Amplitude:0.##} f_sig: {SignalFrequency:0.##} f_sam: {SamplingFrequency:0.##}"),
-                signal.points);
+                signal);
 
             SystemSounds.Beep.Play();
+        }
+
+        private void PlotOperate(Operations.OperationType type)
+        {
+            if (FirstChosenPlot > PlotsCount || SecondChosenPlot > PlotsCount)
+            {
+                MessageBox.Show($"Invalid plots indexes. Maximum plot index is: {PlotsCount}");
+                return;
+            }
+
+            if (FirstChosenPlot == SecondChosenPlot)
+            {
+                MessageBox.Show($"Choose two different plots.");
+                return;
+            }
+
+            var first = Plots[FirstChosenPlot].Signal;
+            var second = Plots[SecondChosenPlot].Signal;
+            var newSignal = Operations.operate(type, first, second);
+            if (FirstChosenPlot > SecondChosenPlot)
+            {
+                RemovePlot(FirstChosenPlot);
+                RemovePlot(SecondChosenPlot);
+            }
+            else
+            {
+                RemovePlot(SecondChosenPlot);
+                RemovePlot(FirstChosenPlot);
+            }
+            AddPlot(
+                CreatePlot(newSignal.points, $"{type} f_sig: {first.metadata.signalFrequency:0.##} f_sam: {first.metadata.samplingFrequency:0.##}"),
+                newSignal);
         }
 
     }

@@ -1,5 +1,4 @@
-﻿using Microsoft.FSharp.Collections;
-using OxyPlot;
+﻿using OxyPlot;
 using SignalProcessing;
 using UILogic.Base;
 
@@ -8,7 +7,7 @@ namespace PlotsVisualizer.Models
     public class Plot : BindableBase
     {
         private PlotModel _plotModel;
-        private FSharpList<Types.Point> _points;
+        private Types.Signal _signal;
 
         public PlotModel PlotModel
         {
@@ -16,10 +15,10 @@ namespace PlotsVisualizer.Models
             set => SetProperty(ref _plotModel, value);
         }
 
-        public FSharpList<Types.Point> Points
+        public Types.Signal Signal
         {
-            get => _points;
-            set => SetProperty(ref _points, value);
+            get => _signal;
+            set => SetProperty(ref _signal, value);
         }
     }
 }
