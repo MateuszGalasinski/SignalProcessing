@@ -119,6 +119,8 @@ namespace PlotsVisualizer.ViewModels
         public IRaiseCanExecuteCommand SubstractCommand { get; }
         public IRaiseCanExecuteCommand MultiplyCommand { get; }
         public IRaiseCanExecuteCommand DivideCommand { get; }
+
+        public IRaiseCanExecuteCommand ShowStatsCommand { get; }
         #endregion
 
         public MainViewModel()
@@ -134,6 +136,7 @@ namespace PlotsVisualizer.ViewModels
             SubstractCommand = new RelayCommand(() => PlotOperate(Operations.OperationType.Substraction));
             MultiplyCommand = new RelayCommand(() => PlotOperate(Operations.OperationType.Multiplication));
             DivideCommand = new RelayCommand(() => PlotOperate(Operations.OperationType.Division));
+            ShowStatsCommand = new RelayCommand(ShowStats);
 
             SignalType = Types.SignalType.Sin;
         }
@@ -310,10 +313,19 @@ namespace PlotsVisualizer.ViewModels
                 RemovePlot(SecondChosenPlot);
                 RemovePlot(FirstChosenPlot);
             }
+
+            string title = first.metadata == null
+                ? $"{type} metadata unavailable"
+                : $"{type} f_sig: {first.metadata.signalFrequency:0.##} f_sam: {first.metadata.samplingFrequency:0.##}";
             AddPlot(
-                CreatePlot(newSignal.points, $"{type} f_sig: {first.metadata.signalFrequency:0.##} f_sam: {first.metadata.samplingFrequency:0.##}"),
+                CreatePlot(newSignal.points, title),
                 newSignal);
         }
 
+        private void ShowStats()
+        {
+            SignalParametersWindow statsWindow = new SignalParametersWindow(new SignalParametersViewModel(Plots[CurrentPlotIndex].Signal));
+            statsWindow.Show();
+        }
     }
 }
