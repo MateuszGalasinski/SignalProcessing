@@ -8,6 +8,7 @@
     <Compile Include="Types.fs" />
     <Compile Include="SignalProcessing.fs" />
     <Compile Include="Operations.fs" />
+    <Compile Include="Statistics.fs" />
   </ItemGroup>
 
 </Project>

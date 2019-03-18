@@ -2,17 +2,48 @@
 
 [<AutoOpen>]
 module Types =
-    type Complex = 
-        {
-            r: float
-            i: float
-        }
+    //type Complex = 
+    //    {
+    //        r: double
+    //        i: double
+    //    }
 
-    type Point = 
-        {
-            x : Complex 
-            y : Complex
-        }
+    type Complex(r: double, i : double) =
+       member this.r = r
+       member this.i = i
+       //overloading + operator
+       static member (+) (a : Complex, b: Complex) =
+          Complex(a.r + b.r, a.i + b.i)
+
+       //overloading - operator
+       static member (-) (a : Complex, b: Complex) =
+          Complex(a.r - b.r, a.i - b.i)
+
+       // overriding the ToString method
+       override this.ToString() =
+          this.r.ToString() + " i" + this.i.ToString()
+
+
+    type Point(x: double, y : Complex) =
+       member this.x = x
+       member this.y = y
+       //overloading + operator
+       static member (+) (a : Point, b: Point) =
+          Point(a.x + b.x, a.y + b.y)
+
+       //overloading - operator
+       static member (-) (a : Point, b: Point) =
+          Point(a.x - b.x, a.y - b.y)
+
+       // overriding the ToString method
+       override this.ToString() =
+          this.x.ToString() + " " + this.y.ToString()
+
+    //type Point = 
+    //    {
+    //        x : Complex 
+    //        y : Complex
+    //    }
 
     type SignalType = 
         | RandomNoise = 0
@@ -29,12 +60,12 @@ module Types =
 
     type SignalMetadata =
         {
-            amplitude : float
-            startTime : float
-            duration : float
-            dutyCycle : float
-            signalFrequency : float
-            samplingFrequency : float
+            amplitude : double
+            startTime : double
+            duration : double
+            dutyCycle : double
+            signalFrequency : double
+            samplingFrequency : double
         }
 
     type Signal = 

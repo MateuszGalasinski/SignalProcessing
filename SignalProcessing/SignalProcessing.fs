@@ -5,7 +5,7 @@ open System
 module SignalProcessing = 
     
     let consolePrint (signal : Signal) = 
-        signal.points |> List.iter (fun p -> printfn "x.r %f x.i %f || y.r %f y.i %f" p.x.r p.x.i p.y.r p.y.i)
+        signal.points |> List.iter (fun p -> printfn "x %f || y.r %f y.i %f" p.x p.y.r p.y.i)
         printfn "Points amount: %i" signal.points.Length
     
     let genSignal (metadata : SignalMetadata) (points : List<Point>) = 
@@ -24,33 +24,30 @@ module SignalProcessing =
             samplingFrequency = samplingFreq
         }
 
-    let generateXValues duration samplingFreq startTime : List<Complex> =
+    let generateXValues duration samplingFreq startTime =
         let step = 1.0 / samplingFreq
         [
             for x in startTime..step..(startTime+duration) do
-                yield { r = x; i = 0.0 }
+                yield x 
         ]
     
-    let genPoints 
-        (metadata : SignalMetadata) 
-        (valueGenerator : List<Complex> -> List<Point>) 
-        : List<Point> =
+    let genPoints metadata valueGenerator : List<Point> =
         generateXValues metadata.duration metadata.samplingFrequency metadata.startTime
                     |> (valueGenerator);
 
     //x independent generators
-    let pointFactory ySource : Complex -> Point =
-        fun v -> {x = v; y = {r = ySource(); i = 0.0}}
+    let pointFactory ySource =
+        fun v -> Point(v, Complex(ySource(), 0.0)) 
     
-    let generatePoints amplitude ySource : List<Complex> -> List<Point> =
+    let generatePoints amplitude ySource =
         let pointGenerator = pointFactory (fun _ -> ySource() * amplitude )
         fun values -> values |> List.map pointGenerator
 
-    let randomNoiseSource meta : List<Complex> -> List<Point>= 
+    let randomNoiseSource meta = 
         let random = System.Random()
         generatePoints meta.amplitude random.NextDouble
 
-    let gaussianNoiseSource meta : List<Complex> -> List<Point> = 
+    let gaussianNoiseSource meta = 
         let random = System.Random()
         let randomSource = fun _ -> 
             1.0 + (sqrt (-2.0 * Math.Log(random.NextDouble()))) * (sin (2.0 * Math.PI * random.NextDouble()))
@@ -66,11 +63,11 @@ module SignalProcessing =
                 0.0 )
 
     //x depenedent generators
-    let pointFromXFactory ySource : Complex -> Point =
-        fun v -> {x = v; y = {r = ySource(v); i = 0.0}}
+    let pointFromXFactory ySource =
+        fun v -> Point(v, Complex(ySource(v), 0.0)) 
 
-    let trigonometricGenerator (meta : SignalMetadata) trigFunc : List<Complex> -> List<Point> =
-        let sinCalc = pointFromXFactory (fun x -> meta.amplitude * trigFunc (2.0 * Math.PI * meta.signalFrequency * (x.r - meta.startTime)))
+    let trigonometricGenerator (meta : SignalMetadata) trigFunc =
+        let sinCalc = pointFromXFactory (fun x -> meta.amplitude * trigFunc (2.0 * Math.PI * meta.signalFrequency * (x - meta.startTime)))
         fun values -> values |> List.map sinCalc
 
     let sinGenerator (meta : SignalMetadata) =
@@ -84,7 +81,7 @@ module SignalProcessing =
 
     let impulseResponse (meta : SignalMetadata) =
         let pointCalc = pointFromXFactory (fun x -> 
-            if x.r = 0.0 then
+            if x = 0.0 then
                 1.0
             else
                 0.0 )
@@ -92,9 +89,9 @@ module SignalProcessing =
 
     let stepResponse (meta : SignalMetadata) =
         let pointCalc = pointFromXFactory (fun x -> 
-            if x.r > meta.startTime then
+            if x > meta.startTime then
                 meta.amplitude
-            else if x.r = meta.startTime then
+            else if x = meta.startTime then
                 meta.amplitude / 2.0
             else
                 0.0 )
@@ -102,8 +99,8 @@ module SignalProcessing =
 
     let rectangleResponse (meta : SignalMetadata) =
         let pointCalc = pointFromXFactory (fun x -> 
-            let absTimeToFreqRatio = (x.r - meta.startTime) / meta.signalFrequency
-            if absTimeToFreqRatio - (float (int absTimeToFreqRatio)) < meta.dutyCycle then
+            let absTimeToFreqRatio = (x - meta.startTime) / meta.signalFrequency
+            if absTimeToFreqRatio - (double (int absTimeToFreqRatio)) < meta.dutyCycle then
                 meta.amplitude
             else
                 0.0 )
@@ -111,8 +108,8 @@ module SignalProcessing =
         
     let rectangleSymmetricResponse (meta : SignalMetadata) =
         let pointCalc = pointFromXFactory (fun x -> 
-            let absTimeToFreqRatio = (x.r - meta.startTime) / meta.signalFrequency
-            if absTimeToFreqRatio - (float (int absTimeToFreqRatio)) < meta.dutyCycle then
+            let absTimeToFreqRatio = (x - meta.startTime) / meta.signalFrequency
+            if absTimeToFreqRatio - (double (int absTimeToFreqRatio)) < meta.dutyCycle then
                 meta.amplitude
             else
                 -meta.amplitude )
@@ -123,9 +120,9 @@ module SignalProcessing =
         let ampOverDuty = meta.amplitude / meta.dutyCycle
         let period = 1.0 / meta.signalFrequency
         let pointCalc = pointFromXFactory (fun x -> 
-            let relX = x.r - (float (int (x.r / period)) * period)
-            let absTimeToPeriodRatio = (x.r - meta.startTime) * period
-            if absTimeToPeriodRatio - (float (int absTimeToPeriodRatio)) < meta.dutyCycle then
+            let relX = x - (double (int (x / period)) * period)
+            let absTimeToPeriodRatio = (x - meta.startTime) * period
+            if absTimeToPeriodRatio - (double (int absTimeToPeriodRatio)) < meta.dutyCycle then
                  ampOverDuty * (relX - meta.startTime) / period
             else
                 ((meta.amplitude) / oneMinusDuty) + ((-meta.amplitude / oneMinusDuty) * ((relX - meta.startTime) / period))

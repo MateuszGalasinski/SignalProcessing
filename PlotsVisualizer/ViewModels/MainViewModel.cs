@@ -266,7 +266,7 @@ namespace PlotsVisualizer.ViewModels
             var series = new LineSeries { LineStyle = LineStyle.None, MarkerType = MarkerType.Circle, MarkerSize = 2};
             foreach (var point in points)
             {
-                series.Points.Add(new DataPoint(point.x.r, point.y.r));
+                series.Points.Add(new DataPoint(point.x, point.y.r));
             }
             plot.Series.Add(series);
 
@@ -324,8 +324,11 @@ namespace PlotsVisualizer.ViewModels
 
         private void ShowStats()
         {
-            SignalParametersWindow statsWindow = new SignalParametersWindow(new SignalParametersViewModel(Plots[CurrentPlotIndex].Signal));
-            statsWindow.Show();
+            if(CurrentPlot != null)
+            {
+                SignalParametersWindow statsWindow = new SignalParametersWindow(new SignalParametersViewModel(CurrentPlot.Signal));
+                statsWindow.Show();
+            }
         }
     }
 }
