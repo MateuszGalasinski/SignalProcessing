@@ -120,7 +120,7 @@
         <!--#endregion-->
 
         <Button Content="Delete" Command="{Binding DeleteCommand}" Grid.Row="6" Grid.Column="9" Margin="10" Background="DarkGoldenrod"></Button>
-
         <Button Content="Show stats" Command="{Binding ShowStatsCommand}" Grid.Row="8" Grid.Column="9" Margin="10" Background="PaleGoldenrod"></Button>
+        <Button Content="Show histogram" Command="{Binding ShowHistogramCommand}" Grid.Row="8" Grid.Column="1" Margin="10" Background="PaleGoldenrod"></Button>
     </Grid>
 </Window>

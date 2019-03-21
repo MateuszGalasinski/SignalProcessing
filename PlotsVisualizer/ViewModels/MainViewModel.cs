@@ -3,6 +3,7 @@ using Microsoft.Win32;
 using OxyPlot;
 using OxyPlot.Series;
 using PlotsVisualizer.Models;
+using PlotsVisualizer.Views;
 using SignalProcessing;
 using System;
 using System.Collections.Generic;
@@ -123,6 +124,7 @@ namespace PlotsVisualizer.ViewModels
         public IRaiseCanExecuteCommand DivideCommand { get; }
 
         public IRaiseCanExecuteCommand ShowStatsCommand { get; }
+        public IRaiseCanExecuteCommand ShowHistogramCommand { get; }
         #endregion
 
         public MainViewModel()
@@ -139,6 +141,7 @@ namespace PlotsVisualizer.ViewModels
             MultiplyCommand = new RelayCommand(() => PlotOperate(Operations.OperationType.Multiplication));
             DivideCommand = new RelayCommand(() => PlotOperate(Operations.OperationType.Division));
             ShowStatsCommand = new RelayCommand(ShowStats);
+            ShowHistogramCommand = new RelayCommand(ShowHistogram);
 
             SignalType = Types.SignalType.Sin;
         }
@@ -365,6 +368,15 @@ namespace PlotsVisualizer.ViewModels
             {
                 SignalParametersWindow statsWindow = new SignalParametersWindow(new SignalParametersViewModel(CurrentPlot.Signal));
                 statsWindow.Show();
+            }
+        }
+
+        private void ShowHistogram()
+        {
+            if (CurrentPlot != null)
+            {
+                HistogramWindow histogramWindow = new HistogramWindow(new HistogramViewModel(CurrentPlot.Signal));
+                histogramWindow.Show();
             }
         }
     }

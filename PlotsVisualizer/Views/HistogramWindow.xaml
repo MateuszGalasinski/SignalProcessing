@@ -1,0 +1,13 @@
+﻿<Window x:Class="PlotsVisualizer.Views.HistogramWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:PlotsVisualizer.Views"
+        xmlns:oxy="http://oxyplot.org/wpf"
+        mc:Ignorable="d"
+        Title="HistogramWindow" Height="450" Width="800">
+    <Grid>
+        <oxy:PlotView Grid.Row="0" Grid.ColumnSpan="12" Model="{Binding Histogram}" Margin="20,30,20,30" />
+    </Grid>
+</Window>
