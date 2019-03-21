@@ -121,12 +121,13 @@ module SignalProcessing =
         let period:double = 1.0 / meta.signalFrequency
         let pointCalc = pointFromXFactory (fun x -> 
             //abs ((x % period) - meta.amplitude)
+            let x = x - meta.startTime
             let relX = x - (floor (x / period) * period)
-            let absTimeToPeriodRatio = (x - meta.startTime) * period
+            let absTimeToPeriodRatio = x * period
             if absTimeToPeriodRatio - floor absTimeToPeriodRatio < meta.dutyCycle then
-                 ampOverDuty * (relX - meta.startTime) / period
+                 ampOverDuty * (relX) / period
             else
-                ((meta.amplitude) / oneMinusDuty) + ((-meta.amplitude / oneMinusDuty) * ((relX - meta.startTime) / period))
+                ((meta.amplitude) / oneMinusDuty) + ((-meta.amplitude / oneMinusDuty) * (relX / period))
             )
         fun values -> values |> List.map pointCalc
 
