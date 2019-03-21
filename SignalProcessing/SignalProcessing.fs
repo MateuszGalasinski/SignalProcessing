@@ -119,8 +119,7 @@ module SignalProcessing =
         let oneMinusDuty:double = 1.0-meta.dutyCycle
         let ampOverDuty:double = meta.amplitude / meta.dutyCycle
         let period:double = 1.0 / meta.signalFrequency
-        let pointCalc = pointFromXFactory (fun x -> 
-            //abs ((x % period) - meta.amplitude)
+        let pointCalc = pointFromXFactory (fun x ->
             let x = x - meta.startTime
             let relX = x - (floor (x / period) * period)
             let absTimeToPeriodRatio = x * period
