@@ -22,10 +22,30 @@
             <ColumnDefinition Width="2*"></ColumnDefinition>
             <ColumnDefinition Width="2*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
+        <TextBlock Text="Choose precision" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="0" Grid.Column="3"></TextBlock>
+        <TextBox Text="{Binding FormatPrecision}" FontSize="16" 
+                 HorizontalAlignment="Left" VerticalAlignment="Center" MinWidth="80" MaxWidth="80" Margin="10, 0, 0, 0"
+                 Grid.Row="1" Grid.Column="3"></TextBox>
+        <Button Content="Reformat" Command="{Binding FormatCommand}" 
+                HorizontalAlignment="Right" VerticalAlignment="Center" Grid.Row="1" Grid.Column="3" Margin="0,0,10,0" 
+                MinWidth="80" MinHeight="25" Background="PaleGoldenrod"></Button>
+
         <TextBlock Text="Amplitude" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="0" Grid.Column="0"></TextBlock>
         <TextBlock Text="{Binding Signal.metadata.amplitude}" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="1" Grid.Column="0"></TextBlock>
 
         <TextBlock Text="Mean" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="0" Grid.Column="1"></TextBlock>
         <TextBlock Text="{Binding Mean}" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="1" Grid.Column="1"></TextBlock>
+
+        <TextBlock Text="Mean absolute" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="0" Grid.Column="2"></TextBlock>
+        <TextBlock Text="{Binding MeanAbs}" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="1" Grid.Column="2"></TextBlock>
+        
+        <TextBlock Text="Mean power" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="2" Grid.Column="2"></TextBlock>
+        <TextBlock Text="{Binding MeanPower}" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="3" Grid.Column="2"></TextBlock>
+
+        <TextBlock Text="Effective value" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="2" Grid.Column="0"></TextBlock>
+        <TextBlock Text="{Binding EffectiveValue}" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="3" Grid.Column="0"></TextBlock>
+
+        <TextBlock Text="Variance" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="2" Grid.Column="1"></TextBlock>
+        <TextBlock Text="{Binding Variance}" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="3" Grid.Column="1"></TextBlock>
     </Grid>
 </Window>

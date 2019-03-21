@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Media;
 using System.Windows;
 using UILogic.Base;
@@ -302,6 +303,13 @@ namespace PlotsVisualizer.ViewModels
 
             var first = Plots[FirstChosenPlot].Signal;
             var second = Plots[SecondChosenPlot].Signal;
+
+            if (!first.points.All(p => second.points.Any(sp => p.x == sp.x)))
+            {
+                MessageBox.Show("Chosen plots are incompatible for operation.");
+                return;
+            }
+
             var newSignal = Operations.operate(type, first, second);
             if (FirstChosenPlot > SecondChosenPlot)
             {

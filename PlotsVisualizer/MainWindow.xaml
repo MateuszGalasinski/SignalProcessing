@@ -93,13 +93,13 @@
         <TextBox FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"  MinWidth="80" MaxWidth="80" Grid.Row="4" Grid.Column="5"
                  Text="{Binding SecondChosenPlot}"></TextBox>
 
-        <Button Content="+" Command="{Binding AddCommand}" FontSize="22" Margin="5"
+        <Button Content="+" Command="{Binding AddCommand}" FontSize="16" Margin="5"
                 VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Grid.Row="4" Grid.Column="6" Background="Goldenrod"></Button>
-        <Button Content="-" Command="{Binding SubstractCommand}" FontSize="22" Margin="5"
+        <Button Content="-" Command="{Binding SubstractCommand}" FontSize="16" Margin="5"
                 VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Grid.Row="4" Grid.Column="7" Background="Goldenrod"></Button>
-        <Button Content="*" Command="{Binding MultiplyCommand}" FontSize="22" Margin="5"
+        <Button Content="*" Command="{Binding MultiplyCommand}" FontSize="16" Margin="5"
                 VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Grid.Row="4" Grid.Column="8" Background="Goldenrod"></Button>
-        <Button Content="/" Command="{Binding DivideCommand}" FontSize="22" Margin="5"
+        <Button Content="/" Command="{Binding DivideCommand}" FontSize="16" Margin="5"
                 VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Grid.Row="4" Grid.Column="9" Background="Goldenrod"></Button>
 
 

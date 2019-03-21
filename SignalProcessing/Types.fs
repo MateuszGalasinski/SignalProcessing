@@ -1,13 +1,9 @@
 ﻿namespace SignalProcessing
 
+open System
+
 [<AutoOpen>]
 module Types =
-    //type Complex = 
-    //    {
-    //        r: double
-    //        i: double
-    //    }
-
     type Complex(r: double, i : double) =
        member this.r = r
        member this.i = i
@@ -20,8 +16,8 @@ module Types =
           Complex(a.r - b.r, a.i - b.i)
 
        // overriding the ToString method
-       override this.ToString() =
-          this.r.ToString() + " i" + this.i.ToString()
+       member this.ToString(format:string) =
+          this.r.ToString(format) + " i" + this.i.ToString(format)
 
 
     type Point(x: double, y : Complex) =
@@ -39,11 +35,6 @@ module Types =
        override this.ToString() =
           this.x.ToString() + " " + this.y.ToString()
 
-    //type Point = 
-    //    {
-    //        x : Complex 
-    //        y : Complex
-    //    }
 
     type SignalType = 
         | RandomNoise = 0
