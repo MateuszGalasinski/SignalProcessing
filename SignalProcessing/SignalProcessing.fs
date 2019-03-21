@@ -25,7 +25,7 @@ module SignalProcessing =
         }
 
     let generateXValues duration samplingFreq startTime =
-        let step = 1.0 / samplingFreq
+        let step:double = 1.0 / samplingFreq
         [
             for x in startTime..step..(startTime+duration) do
                 yield x 
@@ -116,28 +116,19 @@ module SignalProcessing =
         fun values -> values |> List.map pointCalc
 
     let triangleResponse (meta : SignalMetadata) =
-        let oneMinusDuty = 1.0-meta.dutyCycle
-        let ampOverDuty = meta.amplitude / meta.dutyCycle
-        let period = 1.0 / meta.signalFrequency
+        let oneMinusDuty:double = 1.0-meta.dutyCycle
+        let ampOverDuty:double = meta.amplitude / meta.dutyCycle
+        let period:double = 1.0 / meta.signalFrequency
         let pointCalc = pointFromXFactory (fun x -> 
-            let relX = x - (double (int (x / period)) * period)
+            //abs ((x % period) - meta.amplitude)
+            let relX = x - (floor (x / period) * period)
             let absTimeToPeriodRatio = (x - meta.startTime) * period
-            if absTimeToPeriodRatio - (double (int absTimeToPeriodRatio)) < meta.dutyCycle then
+            if absTimeToPeriodRatio - floor absTimeToPeriodRatio < meta.dutyCycle then
                  ampOverDuty * (relX - meta.startTime) / period
             else
                 ((meta.amplitude) / oneMinusDuty) + ((-meta.amplitude / oneMinusDuty) * ((relX - meta.startTime) / period))
             )
         fun values -> values |> List.map pointCalc
-
-    let testGenerator amplitude = 
-        let startTime = 0.0
-        let duration = 10.0
-        let signalFrequency = 1.0
-        let dutyCycle = 0.5
-        let samplingFreq = 1.0
-        let meta : SignalMetadata = genMetadata amplitude duration startTime dutyCycle signalFrequency samplingFreq
-        let pointsGen = genPoints meta
-        genSignal meta (pointsGen (sinGenerator meta))
 
     let resolveGenerator signalType = 
         match signalType with 

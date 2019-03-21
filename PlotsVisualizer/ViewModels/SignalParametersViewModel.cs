@@ -17,6 +17,7 @@ namespace PlotsVisualizer.ViewModels
         private string _meanPowerText;
         private string _effectiveValueText;
         private string _varianceText;
+        private uint _formatPrecision = 4;
 
         public SignalParametersViewModel(Types.Signal signal)
         {
@@ -66,7 +67,11 @@ namespace PlotsVisualizer.ViewModels
             private set => SetProperty(ref _varianceText, value);
         }
 
-        public uint FormatPrecision { get; set; } = 4;
+        public uint FormatPrecision
+        {
+            get => _formatPrecision;
+            set => SetProperty(ref _formatPrecision, value);
+        }
 
         private void FormatValues()
         {

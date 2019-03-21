@@ -1,7 +1,5 @@
 ﻿namespace SignalProcessing
 
-open System
-
 [<AutoOpen>]
 module Types =
     type Complex(r: double, i : double) =

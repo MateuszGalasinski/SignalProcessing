@@ -8,7 +8,6 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Media;
 using System.Windows;
 using UILogic.Base;
@@ -17,9 +16,11 @@ namespace PlotsVisualizer.ViewModels
 {
     class MainViewModel : BindableBase
     {
+        private const int stepDivisor = 4000;
+
         private Plot _currentPlotModel;
         private int _currentPlotIndex = -1;
-        private string _fileName = "currentPlot";
+        private string _fileName = "my favorite plot";
         private int _plotsCount = 0;
         private double _amplitude = 1;
         private double _startTime = 0;
@@ -190,6 +191,11 @@ namespace PlotsVisualizer.ViewModels
 
         private void SaveToFile()
         {
+            if (Plots.Count < 1)
+            {
+                MessageBox.Show("Create some plot first.");
+                return;
+            }
             using (var fileStream = new FileStream(Path.Combine(Directory.GetCurrentDirectory(), FileName), FileMode.Create))
             {
                 var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
@@ -264,9 +270,12 @@ namespace PlotsVisualizer.ViewModels
         private PlotModel CreatePlot(FSharpList<Types.Point> points, string title)
         {
             var plot = new PlotModel { Title = title };
-            var series = new LineSeries { LineStyle = LineStyle.None, MarkerType = MarkerType.Circle, MarkerSize = 2};
-            foreach (var point in points)
+            var series = new LineSeries { LineStyle = LineStyle.None, MarkerType = MarkerType.Circle, MarkerSize = 1, MarkerFill = OxyColors.SlateGray};
+            int step = (int)Math.Ceiling((double) points.Length / stepDivisor);
+            Types.Point point = null;
+            for (int i = 0; i < points.Length; i += step)
             {
+                point = points[i];
                 series.Points.Add(new DataPoint(point.x, point.y.r));
             }
             plot.Series.Add(series);
@@ -304,30 +313,50 @@ namespace PlotsVisualizer.ViewModels
             var first = Plots[FirstChosenPlot].Signal;
             var second = Plots[SecondChosenPlot].Signal;
 
-            if (!first.points.All(p => second.points.Any(sp => p.x == sp.x)))
+            if (first.points.Length != second.points.Length)
             {
                 MessageBox.Show("Chosen plots are incompatible for operation.");
                 return;
             }
 
-            var newSignal = Operations.operate(type, first, second);
-            if (FirstChosenPlot > SecondChosenPlot)
+            for (int i = 0; i < first.points.Length; i++)
             {
-                RemovePlot(FirstChosenPlot);
-                RemovePlot(SecondChosenPlot);
-            }
-            else
-            {
-                RemovePlot(SecondChosenPlot);
-                RemovePlot(FirstChosenPlot);
+                if (first.points[i].x != second.points[i].x)
+                {
+                    MessageBox.Show("Plots have different x values.");
+                    return;
+                }
             }
 
-            string title = first.metadata == null
-                ? $"{type} metadata unavailable"
-                : $"{type} f_sig: {first.metadata.signalFrequency:0.##} f_sam: {first.metadata.samplingFrequency:0.##}";
-            AddPlot(
-                CreatePlot(newSignal.points, title),
-                newSignal);
+            try
+            {
+                var newSignal = Operations.operate(type, first, second);
+                if (FirstChosenPlot > SecondChosenPlot)
+                {
+                    RemovePlot(FirstChosenPlot);
+                    RemovePlot(SecondChosenPlot);
+                }
+                else
+                {
+                    RemovePlot(SecondChosenPlot);
+                    RemovePlot(FirstChosenPlot);
+                }
+
+                string title = first.metadata == null
+                    ? $"{type} metadata unavailable"
+                    : $"{type} f_sig: {first.metadata.signalFrequency:0.##} f_sam: {first.metadata.samplingFrequency:0.##}";
+                AddPlot(
+                    CreatePlot(newSignal.points, title),
+                    newSignal);
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Could not operate successfully on these plots. Cleaned up plots.");
+                while (Plots.Count != 0)
+                {
+                    RemovePlot(PlotsCount-1);
+                }
+            }
         }
 
         private void ShowStats()
