@@ -1,5 +1,4 @@
 ﻿using SignalProcessing;
-using System;
 using System.Windows;
 using UILogic.Base;
 
@@ -21,7 +20,6 @@ namespace PlotsVisualizer.ViewModels
 
         public SignalParametersViewModel(Types.Signal signal)
         {
-            Signal = signal ?? throw new ArgumentNullException(nameof(signal));
             _mean = Statistics.meanValue(signal.points);
             _meanAbs = Statistics.meanAbsValue(signal.points);
             _meanPower = Statistics.meanPower(signal.points);
@@ -34,8 +32,6 @@ namespace PlotsVisualizer.ViewModels
         }
 
         public IRaiseCanExecuteCommand FormatCommand { get; }
-
-        public Types.Signal Signal { get; }
 
         public string Mean
         {

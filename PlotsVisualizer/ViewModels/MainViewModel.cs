@@ -32,8 +32,8 @@ namespace PlotsVisualizer.ViewModels
         private Types.SignalType _signalType;
         private int _firstChosenPlot = 0;
         private int _secondChosenPlot = 1;
+        private List<Plot> Plots { get; } = new List <Plot>();
 
-        public List<Plot> Plots { get; } = new List <Plot>();
 
         #region observable props
         public int CurrentPlotIndex
