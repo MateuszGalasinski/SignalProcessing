@@ -27,8 +27,8 @@ module Operations =
         match operation with 
         | OperationType.Addition -> add signal1 signal2
         | OperationType.Substraction -> substract signal1 signal2
-        | OperationType.Multiplication -> divide signal1 signal2
-        | OperationType.Division -> multiply signal1 signal2
+        | OperationType.Multiplication -> multiply signal1 signal2
+        | OperationType.Division -> divide signal1 signal2
 
 
 

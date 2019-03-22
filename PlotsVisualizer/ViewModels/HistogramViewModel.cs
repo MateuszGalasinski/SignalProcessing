@@ -3,25 +3,96 @@ using OxyPlot.Axes;
 using OxyPlot.Series;
 using SignalProcessing;
 using System;
+using System.Linq;
+using UILogic.Base;
 
 namespace PlotsVisualizer.ViewModels
 {
-    public class HistogramViewModel
+    public class HistogramViewModel : BindableBase
     {
+        private int _domainsCount = 10;
+        private PlotModel _histogram;
+
         public HistogramViewModel(Types.Signal signal)
         {
             Signal = signal ?? throw new ArgumentNullException(nameof(signal));
+            CalculateCommand = new RelayCommand(CalculateHistogram, () => DomainsCount > 1 && DomainsCount < 100);
 
-            var model = new PlotModel { Title = "ColumnSeries" };
-            // A ColumnSeries requires a CategoryAxis on the x-axis.
-            model.Axes.Add(new CategoryAxis());
+            CalculateHistogram();
+        }
+
+        public IRaiseCanExecuteCommand CalculateCommand { get; }
+
+        public Types.Signal Signal { get; set; }
+
+        public PlotModel Histogram
+        {
+            get => _histogram;
+            set => SetProperty(ref _histogram, value);
+        }
+
+        public int DomainsCount
+        {
+            get => _domainsCount;
+            set => SetProperty(ref _domainsCount, value);
+        }
+
+        private void CalculateHistogram()
+        {
+            var points = Signal.points.ToList();
+            points.Sort((p, n) => p.y.r.CompareTo(n.y.r));
+
+            (double min, double max) = (points.First().y.r, points.Last().y.r);
+            double domainWidth = (max - min) / DomainsCount;
+            double[] domainsCounts = CalculateDomainCounts(points, min, domainWidth);
+            string[] domainNames = GenerateDomainNames(min, domainWidth);
+
+            var model = new PlotModel { Title = $"{Signal.metadata.amplitude:F4}" };
             var series = new ColumnSeries();
+            for (int i = 0; i < domainsCounts.Length; i++)
+            {
+                series.Items.Add(new ColumnItem(domainsCounts[i]));
+            }
             model.Series.Add(series);
-            series.Items.Add(new ColumnItem(100));
+
+            model.Axes.Add(new CategoryAxis()
+            {
+                ItemsSource = domainNames,
+                FontSize = 9
+            });
             Histogram = model;
         }
 
-        public Types.Signal Signal { get; set; }
-        public PlotModel Histogram { get; set; }
+        private string[] GenerateDomainNames(double min, double domainWidth)
+        {
+            string[] domainNames = new string[DomainsCount];
+            double lowerBound = min;
+            for (int i = 0; i < DomainsCount; i++)
+            {
+                domainNames[i] = $"{lowerBound:F2} {lowerBound + domainWidth:F2}";
+                lowerBound += domainWidth;
+            }
+
+            return domainNames;
+        }
+
+        private double[] CalculateDomainCounts(System.Collections.Generic.List<Types.Point> points, double min, double domainWidth)
+        {
+            double[] domainsCounts = new double[DomainsCount];
+            double upperBound = min + domainWidth;
+            int domainNumber = 0;
+            for (int i = 0; i < points.Count; i++)
+            {
+                while (points[i].y.r >= upperBound && domainNumber < DomainsCount - 1)
+                {
+                    domainNumber++;
+                    upperBound += domainWidth;
+                }
+
+                domainsCounts[domainNumber]++;
+            }
+
+            return domainsCounts;
+        }
     }
 }

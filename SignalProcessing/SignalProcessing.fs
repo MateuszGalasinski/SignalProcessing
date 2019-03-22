@@ -62,7 +62,7 @@ module SignalProcessing =
             else
                 0.0 )
 
-    //x depenedent generators
+    //x dependent generators
     let pointFromXFactory ySource =
         fun v -> Point(v, Complex(ySource(v), 0.0)) 
 

@@ -28,10 +28,10 @@ namespace PlotsVisualizer.ViewModels
         private double _duration = 5;
         private double _dutyCycle = 0.5;
         private double _signalFrequency = 1;
-        private double _samplingFrequency = 100;
+        private double _samplingFrequency = 800;
         private Types.SignalType _signalType;
         private int _firstChosenPlot = 0;
-        private int _secondChosenPlot = 0;
+        private int _secondChosenPlot = 1;
 
         public List<Plot> Plots { get; } = new List <Plot>();
 
@@ -143,7 +143,7 @@ namespace PlotsVisualizer.ViewModels
             ShowStatsCommand = new RelayCommand(ShowStats);
             ShowHistogramCommand = new RelayCommand(ShowHistogram);
 
-            SignalType = Types.SignalType.Sin;
+            SignalType = Types.SignalType.GaussianNoise;
         }
 
         #region plot navigation

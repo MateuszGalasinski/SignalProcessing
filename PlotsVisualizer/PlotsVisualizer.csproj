@@ -73,6 +73,7 @@
     <Compile Include="Base\BindableBase.cs" />
     <Compile Include="Base\IRaiseCanExecuteCommand.cs" />
     <Compile Include="Base\RelayCommand.cs" />
+    <Compile Include="Helpers\ClearFocusOnClickBehavior.cs" />
     <Compile Include="Helpers\EnumHelper.cs" />
     <Compile Include="Helpers\EnumToCollectionConverter.cs" />
     <Compile Include="Models\Plot.cs" />
