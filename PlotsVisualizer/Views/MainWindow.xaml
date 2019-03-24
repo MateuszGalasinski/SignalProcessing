@@ -80,6 +80,10 @@
         <TextBox FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Goldenrod" MinWidth="80" MaxWidth="80" Grid.Row="1" Grid.Column="9"
                  Text="{Binding SamplingFrequency}"></TextBox>
 
+        <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Goldenrod" Grid.Row="2" Grid.ColumnSpan="2" Grid.Column="6">Is continous ?</TextBlock>
+        <CheckBox HorizontalAlignment="Center" VerticalAlignment="Center" Margin="50, 0, 30, 0" Foreground="Goldenrod" Grid.Row="2" Grid.Column="7"
+                  IsChecked="{Binding IsContinous}"></CheckBox>
+
         <ComboBox Grid.Row="2" Grid.Column="8" FontSize="20" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
                   ItemsSource="{Binding Path=SignalType, Converter={helpers:EnumToCollectionConverter}, Mode=OneTime}"
                   SelectedValue="{Binding Path=SignalType}" />

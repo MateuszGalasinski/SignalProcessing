@@ -6,9 +6,19 @@
 
   <ItemGroup>
     <Compile Include="Types.fs" />
-    <Compile Include="SignalProcessing.fs" />
+    <Compile Include="SignalGeneration.fs" />
     <Compile Include="Operations.fs" />
-    <Compile Include="Statistics.fs" />
+    <Compile Include="StatisticsDiscrete.fs" />
+    <Compile Include="StatisticsContinous.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="MathNet.Numerics" Version="4.7.0" />
+    <PackageReference Include="MathNet.Numerics.FSharp" Version="4.7.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="4.6.2" />
   </ItemGroup>
 
 </Project>

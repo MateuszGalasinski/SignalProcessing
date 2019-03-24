@@ -49,6 +49,8 @@ module Types =
 
     type SignalMetadata =
         {
+            signalType : SignalType
+            isContinous : bool
             amplitude : double
             startTime : double
             duration : double

@@ -1,6 +1,8 @@
 ﻿namespace SignalProcessing
 
-module Statistics = 
+open MathNet.Numerics.Integration
+
+module StatisticsDiscrete = 
     let mean aggregator (points:List<Point>) =
         points
         |> List.map (fun a -> a.y)
@@ -27,3 +29,11 @@ module Statistics =
         let meanValue = meanValue points
         let diff = fun a b -> (a - b) ** 2.0
         mean (fun a b -> Complex(a.r + diff b.r meanValue.r, a.i + diff b.i meanValue.i)) points
+
+    let composite meta = 
+        let signalFunction = ((SignalGeneration.resolveGenerator meta.signalType) meta)
+        SimpsonRule.IntegrateComposite((fun x -> signalFunction x), meta.startTime, meta.startTime + meta.duration, 16 )
+
+    let composite2 meta =
+        let signalFunction = ((SignalGeneration.resolveGenerator meta.signalType) meta)
+        DoubleExponentialTransformation.Integrate((fun x -> signalFunction x), meta.startTime, meta.startTime + meta.duration, 0.1)

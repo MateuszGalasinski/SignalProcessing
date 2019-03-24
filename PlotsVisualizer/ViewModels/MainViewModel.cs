@@ -32,6 +32,7 @@ namespace PlotsVisualizer.ViewModels
         private Types.SignalType _signalType;
         private int _firstChosenPlot = 0;
         private int _secondChosenPlot = 1;
+        private bool _isContinous;
         private List<Plot> Plots { get; } = new List <Plot>();
 
 
@@ -105,6 +106,13 @@ namespace PlotsVisualizer.ViewModels
             get => _secondChosenPlot;
             set => SetProperty(ref _secondChosenPlot, value);
         }
+
+        public bool IsContinous
+        {
+            get => _isContinous;
+            set => SetProperty(ref _isContinous, value);
+        }
+
         #endregion
 
         #region Commands
@@ -288,9 +296,7 @@ namespace PlotsVisualizer.ViewModels
 
         private void AddNewPlot()
         {
-            var signal = SignalProcessing.SignalProcessing.signalGenerator(
-                new Types.SignalMetadata(Amplitude, StartTime, Duration, DutyCycle, SignalFrequency, SamplingFrequency),
-                SignalType);
+            var signal = SignalGeneration.signalGenerator(new Types.SignalMetadata(SignalType, IsContinous, Amplitude, StartTime, Duration, DutyCycle, SignalFrequency, SamplingFrequency));
 
             AddPlot(
                 CreatePlot(signal.points, $"{SignalType} A: {Amplitude:0.##} f_sig: {SignalFrequency:0.##} f_sam: {SamplingFrequency:0.##}"),
@@ -347,7 +353,7 @@ namespace PlotsVisualizer.ViewModels
 
                 string title = first.metadata == null
                     ? $"{type} metadata unavailable"
-                    : $"{type} f_sig: {first.metadata.signalFrequency:0.##} f_sam: {first.metadata.samplingFrequency:0.##}";
+                    : $"{type} Continous:{first.metadata.isContinous} f_sig: {first.metadata.signalFrequency:0.##} f_sam: {first.metadata.samplingFrequency:0.##}";
                 AddPlot(
                     CreatePlot(newSignal.points, title),
                     newSignal);

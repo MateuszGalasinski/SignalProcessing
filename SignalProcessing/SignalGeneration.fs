@@ -2,26 +2,11 @@ namespace SignalProcessing
 
 open System
 
-module SignalProcessing = 
-    
-    let consolePrint (signal : Signal) = 
-        signal.points |> List.iter (fun p -> printfn "x %f || y.r %f y.i %f" p.x p.y.r p.y.i)
-        printfn "Points amount: %i" signal.points.Length
-    
+module SignalGeneration = 
     let genSignal (metadata : SignalMetadata) (points : List<Point>) = 
         {
             points = points
             metadata = metadata
-        }
-
-    let genMetadata amplitude duration startTime dutyCycle signalFreq samplingFreq : SignalMetadata = 
-        {
-            amplitude = amplitude; 
-            startTime = startTime;
-            duration = duration;
-            dutyCycle = dutyCycle;
-            signalFrequency = signalFreq;
-            samplingFrequency = samplingFreq
         }
 
     let generateXValues duration samplingFreq startTime =
@@ -35,40 +20,41 @@ module SignalProcessing =
         generateXValues metadata.duration metadata.samplingFrequency metadata.startTime
                     |> (valueGenerator);
 
-    //x independent generators
-    let pointFactory ySource =
-        fun v -> Point(v, Complex(ySource(), 0.0)) 
-    
-    let generatePoints amplitude ySource =
-        let pointGenerator = pointFactory (fun _ -> ySource() * amplitude )
-        fun values -> values |> List.map pointGenerator
+    let applyYCalculator calculator =
+        fun values -> values |> List.map calculator
+
+    let pointFromXFactory ySource =
+        fun v -> Point(v, Complex(ySource(v), 0.0)) 
 
     let randomNoiseSource meta = 
         let random = System.Random()
-        generatePoints meta.amplitude random.NextDouble
+        fun _ -> random.NextDouble() * meta.amplitude
 
     let gaussianNoiseSource meta = 
         let random = System.Random()
         let randomSource = fun _ -> 
             1.0 + (sqrt (-2.0 * Math.Log(random.NextDouble()))) * (sin (2.0 * Math.PI * random.NextDouble()))
             //TODO check super random 
-        generatePoints meta.amplitude randomSource
+        fun _ -> randomSource() * meta.amplitude
     
     let impulseNoiseResponse (meta : SignalMetadata) =
         let random = System.Random()
-        generatePoints meta.amplitude (fun _ -> 
+        fun _ -> 
             if random.NextDouble() < meta.dutyCycle then
                 meta.amplitude
             else
-                0.0 )
+                0.0 
 
-    //x dependent generators
-    let pointFromXFactory ySource =
-        fun v -> Point(v, Complex(ySource(v), 0.0)) 
+    let impulseResponse (meta : SignalMetadata) =
+        fun x -> 
+            if x = 0.0 then
+                1.0
+            else
+                0.0
 
     let trigonometricGenerator (meta : SignalMetadata) trigFunc =
-        let sinCalc = pointFromXFactory (fun x -> meta.amplitude * trigFunc (2.0 * Math.PI * meta.signalFrequency * (x - meta.startTime)))
-        fun values -> values |> List.map sinCalc
+        fun x -> 
+            meta.amplitude * trigFunc (2.0 * Math.PI * meta.signalFrequency * (x - meta.startTime))
 
     let sinGenerator (meta : SignalMetadata) =
         trigonometricGenerator meta sin
@@ -79,47 +65,37 @@ module SignalProcessing =
     let halfRectifiedSinGenerator meta = 
          trigonometricGenerator meta (fun x -> 0.5 * ((sin x) + abs (sin x)))
 
-    let impulseResponse (meta : SignalMetadata) =
-        let pointCalc = pointFromXFactory (fun x -> 
-            if x = 0.0 then
-                1.0
-            else
-                0.0 )
-        fun values -> values |> List.map pointCalc
 
     let stepResponse (meta : SignalMetadata) =
-        let pointCalc = pointFromXFactory (fun x -> 
+        fun x -> 
             if x > meta.startTime then
                 meta.amplitude
             else if x = meta.startTime then
                 meta.amplitude / 2.0
             else
-                0.0 )
-        fun values -> values |> List.map pointCalc
+                0.0
 
     let rectangleResponse (meta : SignalMetadata) =
-        let pointCalc = pointFromXFactory (fun x -> 
+        fun x -> 
             let absTimeToFreqRatio = (x - meta.startTime) / meta.signalFrequency
             if absTimeToFreqRatio - (double (int absTimeToFreqRatio)) < meta.dutyCycle then
                 meta.amplitude
             else
-                0.0 )
-        fun values -> values |> List.map pointCalc
+                0.0
         
     let rectangleSymmetricResponse (meta : SignalMetadata) =
-        let pointCalc = pointFromXFactory (fun x -> 
+        fun x -> 
             let absTimeToFreqRatio = (x - meta.startTime) / meta.signalFrequency
             if absTimeToFreqRatio - (double (int absTimeToFreqRatio)) < meta.dutyCycle then
                 meta.amplitude
             else
-                -meta.amplitude )
-        fun values -> values |> List.map pointCalc
+                -meta.amplitude
 
     let triangleResponse (meta : SignalMetadata) =
         let oneMinusDuty:double = 1.0-meta.dutyCycle
         let ampOverDuty:double = meta.amplitude / meta.dutyCycle
         let period:double = 1.0 / meta.signalFrequency
-        let pointCalc = pointFromXFactory (fun x ->
+        fun x ->
             let x = x - meta.startTime
             let relX = x - (floor (x / period) * period)
             let absTimeToPeriodRatio = x * period
@@ -127,8 +103,6 @@ module SignalProcessing =
                  ampOverDuty * (relX) / period
             else
                 ((meta.amplitude) / oneMinusDuty) + ((-meta.amplitude / oneMinusDuty) * (relX / period))
-            )
-        fun values -> values |> List.map pointCalc
 
     let resolveGenerator signalType = 
         match signalType with 
@@ -144,6 +118,5 @@ module SignalProcessing =
         | SignalType.ImpulseResponse -> impulseResponse
         | SignalType.ImpulseNoise -> impulseNoiseResponse
 
-    let signalGenerator meta signalType = 
-        let pointsGen = genPoints meta
-        genSignal meta (pointsGen ((resolveGenerator signalType) meta))
+    let signalGenerator meta =
+        genSignal meta ((genPoints meta) (applyYCalculator (pointFromXFactory ((resolveGenerator meta.signalType) meta))))

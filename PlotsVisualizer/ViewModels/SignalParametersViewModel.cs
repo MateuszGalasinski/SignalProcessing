@@ -20,14 +20,24 @@ namespace PlotsVisualizer.ViewModels
 
         public SignalParametersViewModel(Types.Signal signal)
         {
-            _mean = Statistics.meanValue(signal.points);
-            _meanAbs = Statistics.meanAbsValue(signal.points);
-            _meanPower = Statistics.meanPower(signal.points);
-            _effectiveValue = Statistics.effectiveValue(signal.points);
-            _variance = Statistics.variance(signal.points);
+            if (signal.metadata.isContinous)
+            {
+                _mean = StatisticsContinous.meanValue(signal.metadata);
+                _meanAbs = StatisticsContinous.meanAbsValue(signal.metadata);
+                _meanPower = StatisticsContinous.meanPower(signal.metadata);
+                _effectiveValue = StatisticsContinous.effectiveValue(signal.metadata);
+                _variance = StatisticsContinous.variance(signal.metadata);
+            }
+            else
+            {
+                _mean = StatisticsDiscrete.meanValue(signal.points);
+                _meanAbs = StatisticsDiscrete.meanAbsValue(signal.points);
+                _meanPower = StatisticsDiscrete.meanPower(signal.points);
+                _effectiveValue = StatisticsDiscrete.effectiveValue(signal.points);
+                _variance = StatisticsDiscrete.variance(signal.points);
+            }
 
             FormatCommand = new RelayCommand(FormatValues);
-
             FormatValues();
         }
 
