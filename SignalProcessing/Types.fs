@@ -61,6 +61,6 @@ module Types =
 
     type Signal = 
         {
-            points : list<Point>
             metadata : SignalMetadata 
+            points : list<Point>
         }

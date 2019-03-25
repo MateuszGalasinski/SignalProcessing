@@ -1,5 +1,6 @@
 ﻿using Microsoft.FSharp.Collections;
 using Microsoft.Win32;
+using Newtonsoft.Json;
 using OxyPlot;
 using OxyPlot.Series;
 using Persistence;
@@ -219,6 +220,11 @@ namespace PlotsVisualizer.ViewModels
                 binaryFormatter.Serialize(fileStream, pointsToSave);
             }
             _signalSerializer.Serialize(Plots[CurrentPlotIndex].Signal, Path.ChangeExtension(path, "xml"));
+            using (StreamWriter file = File.CreateText(Path.ChangeExtension(path, "json")))
+            {
+                JsonSerializer serializer = new JsonSerializer();
+                serializer.Serialize(file, Plots[CurrentPlotIndex].Signal);
+            }
             SystemSounds.Beep.Play();
         }
 
@@ -226,19 +232,20 @@ namespace PlotsVisualizer.ViewModels
         {
             try
             {   
-                //TODO: check metadata save/load
-                string path =Path.ChangeExtension(Path.Combine(Directory.GetCurrentDirectory(), FileName), "xml");
-                //FSharpList<Types.Point> points;
-                //using (var fileStream = new FileStream(path, FileMode.OpenOrCreate))
-                //{
-                //    var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-                //    points = (FSharpList<Types.Point>)binaryFormatter.Deserialize(fileStream);
-                //}
-                Types.Signal signal = _signalSerializer.Deserialize(path);
+                string path = Path.ChangeExtension(Path.Combine(Directory.GetCurrentDirectory(), FileName), "json");
+
+                Types.Signal signal = null;
+                using (StreamReader file = File.OpenText(path))
+                {
+                    JsonSerializer serializer = new JsonSerializer();
+                    signal = (Types.Signal)serializer.Deserialize(file, typeof(Types.Signal));
+                }
+
                 string title = signal.metadata == null
                     ? $"Metadata unavailable"
                     : $"{signal.metadata.signalType} Continous:{signal.metadata.isContinous} f_sig: {signal.metadata.signalFrequency:0.##} f_sam: {signal.metadata.samplingFrequency:0.##}";
-                AddPlot(CreatePlot(signal.points, "Loaded from file"), signal);
+
+                AddPlot(CreatePlot(signal.points, title), signal);
                 MoveToPlot(Plots.Count - 1);
             }
             catch (Exception e)
