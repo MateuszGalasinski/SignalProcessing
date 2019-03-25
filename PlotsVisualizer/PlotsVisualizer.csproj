@@ -146,10 +146,6 @@
     <None Include="App.config" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Persistence\Persistence.csproj">
-      <Project>{e2d80138-638c-4dba-ba75-000072a5c6f7}</Project>
-      <Name>Persistence</Name>
-    </ProjectReference>
     <ProjectReference Include="..\SignalProcessing\SignalProcessing.fsproj">
       <Project>{951a2a2d-6216-48bb-88b1-6e3950697206}</Project>
       <Name>SignalProcessing</Name>

@@ -98,7 +98,7 @@ module SignalGeneration =
         fun x ->
             let x = x - meta.startTime
             let relX = x - (floor (x / period) * period)
-            let absTimeToPeriodRatio = x * period
+            let absTimeToPeriodRatio = x / period
             if absTimeToPeriodRatio - floor absTimeToPeriodRatio < meta.dutyCycle then
                  ampOverDuty * (relX) / period
             else

@@ -3,7 +3,6 @@ using Microsoft.Win32;
 using Newtonsoft.Json;
 using OxyPlot;
 using OxyPlot.Series;
-using Persistence;
 using PlotsVisualizer.Models;
 using PlotsVisualizer.Views;
 using SignalProcessing;
@@ -20,8 +19,6 @@ namespace PlotsVisualizer.ViewModels
     class MainViewModel : BindableBase
     {
         private const int stepDivisor = 4000;
-
-        private XmlSerializer _signalSerializer = new XmlSerializer();
 
         private Plot _currentPlotModel;
         private int _currentPlotIndex = -1;
@@ -219,7 +216,6 @@ namespace PlotsVisualizer.ViewModels
                 var pointsToSave = Plots[CurrentPlotIndex].Signal.points;
                 binaryFormatter.Serialize(fileStream, pointsToSave);
             }
-            _signalSerializer.Serialize(Plots[CurrentPlotIndex].Signal, Path.ChangeExtension(path, "xml"));
             using (StreamWriter file = File.CreateText(Path.ChangeExtension(path, "json")))
             {
                 JsonSerializer serializer = new JsonSerializer();
