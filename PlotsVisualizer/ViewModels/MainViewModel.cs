@@ -2,6 +2,7 @@
 using Microsoft.Win32;
 using OxyPlot;
 using OxyPlot.Series;
+using Persistence;
 using PlotsVisualizer.Models;
 using PlotsVisualizer.Views;
 using SignalProcessing;
@@ -18,6 +19,8 @@ namespace PlotsVisualizer.ViewModels
     class MainViewModel : BindableBase
     {
         private const int stepDivisor = 4000;
+
+        private XmlSerializer _signalSerializer = new XmlSerializer();
 
         private Plot _currentPlotModel;
         private int _currentPlotIndex = -1;
@@ -207,28 +210,35 @@ namespace PlotsVisualizer.ViewModels
                 MessageBox.Show("Create some plot first.");
                 return;
             }
-            using (var fileStream = new FileStream(Path.Combine(Directory.GetCurrentDirectory(), FileName), FileMode.Create))
+
+            string path = Path.Combine(Directory.GetCurrentDirectory(), FileName);
+            using (var fileStream = new FileStream(path, FileMode.Create))
             {
                 var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
                 var pointsToSave = Plots[CurrentPlotIndex].Signal.points;
                 binaryFormatter.Serialize(fileStream, pointsToSave);
             }
+            _signalSerializer.Serialize(Plots[CurrentPlotIndex].Signal, Path.ChangeExtension(path, "xml"));
             SystemSounds.Beep.Play();
         }
 
         private void LoadFromFile()
         {
             try
-            {
-                FSharpList<Types.Point> points;
-                using (var fileStream = new FileStream(Path.Combine(Directory.GetCurrentDirectory(), FileName), FileMode.OpenOrCreate))
-                {
-                    var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
-                    points = (FSharpList<Types.Point>)binaryFormatter.Deserialize(fileStream);
-                }
-
+            {   
                 //TODO: check metadata save/load
-                AddPlot(CreatePlot(points, "Loaded from file"), new Types.Signal(points, null));
+                string path =Path.ChangeExtension(Path.Combine(Directory.GetCurrentDirectory(), FileName), "xml");
+                //FSharpList<Types.Point> points;
+                //using (var fileStream = new FileStream(path, FileMode.OpenOrCreate))
+                //{
+                //    var binaryFormatter = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
+                //    points = (FSharpList<Types.Point>)binaryFormatter.Deserialize(fileStream);
+                //}
+                Types.Signal signal = _signalSerializer.Deserialize(path);
+                string title = signal.metadata == null
+                    ? $"Metadata unavailable"
+                    : $"{signal.metadata.signalType} Continous:{signal.metadata.isContinous} f_sig: {signal.metadata.signalFrequency:0.##} f_sam: {signal.metadata.samplingFrequency:0.##}";
+                AddPlot(CreatePlot(signal.points, "Loaded from file"), signal);
                 MoveToPlot(Plots.Count - 1);
             }
             catch (Exception e)
