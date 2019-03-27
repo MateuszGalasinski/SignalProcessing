@@ -11,7 +11,7 @@ namespace PlotsVisualizer.Helpers
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return EnumHelper.GetAllValues(value.GetType());
+            return SignalTypeEnumHelper.GetAllValues(value.GetType());
         }
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
         {
