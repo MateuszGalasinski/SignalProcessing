@@ -91,6 +91,9 @@
         <Button Content="Add plot" Command="{Binding AddPlotCommand}" Grid.Row="2" Grid.Column="9" Background="PaleGoldenrod"></Button>
         <!--#endregion-->
 
+        <Button Content="Save plot to image" Command="{Binding SavePlotImageCommand}" 
+                Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" Background="Goldenrod"></Button>
+
         <TextBlock FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="3" Grid.Column="4" Grid.ColumnSpan="2">Choose signals to operate on</TextBlock>
         <TextBox FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"  MinWidth="80" MaxWidth="80" Grid.Row="4" Grid.Column="4"
                  Text="{Binding FirstChosenPlot}"></TextBox>

@@ -2,8 +2,7 @@
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using OxyPlot;
-using OxyPlot.Series;
-using PlotsVisualizer.Models;
+using OxyPlot.Wpf;
 using PlotsVisualizer.Views;
 using SignalProcessing;
 using System;
@@ -13,6 +12,8 @@ using System.IO;
 using System.Media;
 using System.Windows;
 using UILogic.Base;
+using LineSeries = OxyPlot.Series.LineSeries;
+using Plot = PlotsVisualizer.Models.Plot;
 
 namespace PlotsVisualizer.ViewModels
 {
@@ -134,6 +135,7 @@ namespace PlotsVisualizer.ViewModels
 
         public IRaiseCanExecuteCommand ShowStatsCommand { get; }
         public IRaiseCanExecuteCommand ShowHistogramCommand { get; }
+        public IRaiseCanExecuteCommand SavePlotImageCommand { get; }
         #endregion
 
         public MainViewModel()
@@ -151,6 +153,7 @@ namespace PlotsVisualizer.ViewModels
             DivideCommand = new RelayCommand(() => PlotOperate(Operations.OperationType.Division));
             ShowStatsCommand = new RelayCommand(ShowStats);
             ShowHistogramCommand = new RelayCommand(ShowHistogram);
+            SavePlotImageCommand = new RelayCommand(SavePlotImage);
 
             SignalType = Types.SignalType.GaussianNoise;
         }
@@ -251,6 +254,20 @@ namespace PlotsVisualizer.ViewModels
             }
            
             SystemSounds.Beep.Play();
+        }
+
+        private void SavePlotImage()
+        {
+            if (CurrentPlot?.PlotModel != null)
+            {
+                var pngExporter = new PngExporter { Width = 1200, Height = 800, Background = OxyColors.White };
+                string title = CurrentPlot.Signal.metadata == null
+                    ? $"Metadata unavailable"
+                    : $"{CurrentPlot.Signal.metadata.signalType}{(CurrentPlot.Signal.metadata.isContinous ? "Continous" : "Discrete")} f_sig {CurrentPlot.Signal.metadata.signalFrequency:0.##} f_sam {CurrentPlot.Signal.metadata.samplingFrequency:0.##}";
+
+                string filePath = Path.Combine(Directory.GetCurrentDirectory(), Path.ChangeExtension(title, "png"));
+                pngExporter.ExportToFile(CurrentPlot.PlotModel, filePath);
+            }
         }
         #endregion
 
