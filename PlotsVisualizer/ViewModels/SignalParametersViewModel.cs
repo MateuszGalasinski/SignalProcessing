@@ -22,6 +22,12 @@ namespace PlotsVisualizer.ViewModels
         {
             if (signal.metadata.isContinous)
             {
+                if (signal.metadata.signalType == Types.SignalType.Composed)
+                {
+                    MessageBox.Show("Cannot calculate integrals on continous composed signal");
+                    return;
+                }
+
                 _mean = StatisticsContinous.meanValue(signal.metadata);
                 _meanAbs = StatisticsContinous.meanAbsValue(signal.metadata);
                 _meanPower = StatisticsContinous.meanPower(signal.metadata);
@@ -87,11 +93,11 @@ namespace PlotsVisualizer.ViewModels
                 return;
             }
 
-            Mean = _mean.ToString($"F{FormatPrecision}");
-            MeanAbs = _meanAbs.ToString($"F{FormatPrecision}");
-            MeanPower = _meanPower.ToString($"F{FormatPrecision}");
-            EffectiveValue = _effectiveValue.ToString($"F{FormatPrecision}");
-            Variance = _variance.ToString($"F{FormatPrecision}");
+            Mean = _mean?.ToString($"F{FormatPrecision}");
+            MeanAbs = _meanAbs?.ToString($"F{FormatPrecision}");
+            MeanPower = _meanPower?.ToString($"F{FormatPrecision}");
+            EffectiveValue = _effectiveValue?.ToString($"F{FormatPrecision}");
+            Variance = _variance?.ToString($"F{FormatPrecision}");
         }
     }
 }

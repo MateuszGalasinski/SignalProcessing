@@ -239,7 +239,7 @@ namespace PlotsVisualizer.ViewModels
 
                 string title = signal.metadata == null
                     ? $"Metadata unavailable"
-                    : $"{signal.metadata.signalType} Continous:{signal.metadata.isContinous} f_sig: {signal.metadata.signalFrequency:0.##} f_sam: {signal.metadata.samplingFrequency:0.##}";
+                    : $"{signal.metadata.signalType} {(signal.metadata.isContinous ? "Continous" : "Discrete")} f_sig: {signal.metadata.signalFrequency:0.##} f_sam: {signal.metadata.samplingFrequency:0.##}";
 
                 AddPlot(CreatePlot(signal.points, title), signal);
                 MoveToPlot(Plots.Count - 1);
@@ -312,7 +312,7 @@ namespace PlotsVisualizer.ViewModels
             var signal = SignalGeneration.signalGenerator(new Types.SignalMetadata(SignalType, IsContinous, Amplitude, StartTime, Duration, DutyCycle, SignalFrequency, SamplingFrequency));
 
             AddPlot(
-                CreatePlot(signal.points, $"{SignalType} A: {Amplitude:0.##} f_sig: {SignalFrequency:0.##} f_sam: {SamplingFrequency:0.##}"),
+                CreatePlot(signal.points, $"{SignalType} {(signal.metadata.isContinous ? "Continous" : "Discrete")} A: {Amplitude:0.##} f_sig: {SignalFrequency:0.##} f_sam: {SamplingFrequency:0.##}"),
                 signal);
 
             SystemSounds.Beep.Play();
@@ -366,7 +366,7 @@ namespace PlotsVisualizer.ViewModels
 
                 string title = first.metadata == null
                     ? $"{type} metadata unavailable"
-                    : $"{type} Continous:{first.metadata.isContinous} f_sig: {first.metadata.signalFrequency:0.##} f_sam: {first.metadata.samplingFrequency:0.##}";
+                    : $"{type} {(first.metadata.isContinous ? "Continous" : "Discrete")} f_sig: {first.metadata.signalFrequency:0.##} f_sam: {first.metadata.samplingFrequency:0.##}";
                 AddPlot(
                     CreatePlot(newSignal.points, title),
                     newSignal);

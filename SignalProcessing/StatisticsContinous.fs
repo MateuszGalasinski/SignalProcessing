@@ -5,7 +5,9 @@ open MathNet.Numerics.Integration
 module StatisticsContinous = 
 //TODO: implement complex
     let composite meta signalFunction =
-        SimpsonRule.IntegrateComposite((fun x -> signalFunction x), meta.startTime, meta.startTime + meta.duration, 16 )
+        let T = (1.0 / meta.signalFrequency)
+        let d = floor (meta.duration / T) * T
+        SimpsonRule.IntegrateComposite((fun x -> signalFunction x), meta.startTime, meta.startTime + d, 16 )
 
     let composite2 meta =
         let signalFunction = ((SignalGeneration.resolveGenerator meta.signalType) meta)

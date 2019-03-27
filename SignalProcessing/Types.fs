@@ -46,6 +46,7 @@ module Types =
         | StepResponse = 8
         | ImpulseResponse = 9 
         | ImpulseNoise = 10
+        | Composed = 11
 
     type SignalMetadata =
         {
