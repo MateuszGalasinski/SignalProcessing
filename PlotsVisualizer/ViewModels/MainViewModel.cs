@@ -265,7 +265,9 @@ namespace PlotsVisualizer.ViewModels
                     ? $"Metadata unavailable"
                     : $"{CurrentPlot.Signal.metadata.signalType}{(CurrentPlot.Signal.metadata.isContinous ? "Continous" : "Discrete")} f_sig {CurrentPlot.Signal.metadata.signalFrequency:0.##} f_sam {CurrentPlot.Signal.metadata.samplingFrequency:0.##}";
 
-                string filePath = Path.Combine(Directory.GetCurrentDirectory(), Path.ChangeExtension(title, "png"));
+                string filePath = Path.Combine(Directory.GetCurrentDirectory(), "plots");
+                Directory.CreateDirectory(filePath);
+                filePath = Path.Combine(filePath, Path.ChangeExtension(title, "png"));
                 pngExporter.ExportToFile(CurrentPlot.PlotModel, filePath);
             }
         }

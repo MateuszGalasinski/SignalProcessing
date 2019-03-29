@@ -6,11 +6,13 @@ namespace PlotsVisualizer.ViewModels
 {
     public class SignalParametersViewModel : BindableBase
     {
+        private readonly double? _amplitude;
         private readonly Types.Complex _mean;
         private readonly Types.Complex _meanAbs;
         private readonly Types.Complex _meanPower;
         private readonly Types.Complex _effectiveValue;
         private readonly Types.Complex _variance;
+        private string _amplitudeText;
         private string _meanText;
         private string _meanAbsText;
         private string _meanPowerText;
@@ -20,6 +22,7 @@ namespace PlotsVisualizer.ViewModels
 
         public SignalParametersViewModel(Types.Signal signal)
         {
+            _amplitude = signal.metadata.amplitude;
             if (signal.metadata.isContinous)
             {
                 if (signal.metadata.signalType == Types.SignalType.Composed)
@@ -27,7 +30,6 @@ namespace PlotsVisualizer.ViewModels
                     MessageBox.Show("Cannot calculate integrals on continous composed signal");
                     return;
                 }
-
                 _mean = StatisticsContinous.meanValue(signal.metadata);
                 _meanAbs = StatisticsContinous.meanAbsValue(signal.metadata);
                 _meanPower = StatisticsContinous.meanPower(signal.metadata);
@@ -48,6 +50,12 @@ namespace PlotsVisualizer.ViewModels
         }
 
         public IRaiseCanExecuteCommand FormatCommand { get; }
+
+        public string Amplitude
+        {
+            get => _amplitudeText;
+            private set => SetProperty(ref _amplitudeText, value);
+        }
 
         public string Mean
         {
@@ -92,7 +100,7 @@ namespace PlotsVisualizer.ViewModels
                 MessageBox.Show("Precision has to be integer from 1-9");
                 return;
             }
-
+            Amplitude = _amplitude?.ToString($"F{FormatPrecision}");
             Mean = _mean?.ToString($"F{FormatPrecision}");
             MeanAbs = _meanAbs?.ToString($"F{FormatPrecision}");
             MeanPower = _meanPower?.ToString($"F{FormatPrecision}");

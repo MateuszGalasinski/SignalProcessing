@@ -41,6 +41,10 @@
                 Grid.Row="1" Grid.Column="2" Margin="8" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
                 FontSize="12" Background="Goldenrod"></Button>
 
+        <Button Content="Save plot to image" Command="{Binding SavePlotImageCommand}"
+                Grid.Row="1" Grid.Column="8" Grid.ColumnSpan="2" Margin="8" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                FontSize="12" Background="Goldenrod"></Button>
+
         <oxy:PlotView Grid.Row="2" Grid.ColumnSpan="12" Margin="10" 
                       Model="{Binding Histogram}" />
     </Grid>

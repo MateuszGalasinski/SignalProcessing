@@ -1,10 +1,13 @@
 ﻿using OxyPlot;
-using OxyPlot.Axes;
 using OxyPlot.Series;
+using OxyPlot.Wpf;
 using SignalProcessing;
 using System;
+using System.IO;
 using System.Linq;
 using UILogic.Base;
+using CategoryAxis = OxyPlot.Axes.CategoryAxis;
+using ColumnSeries = OxyPlot.Series.ColumnSeries;
 
 namespace PlotsVisualizer.ViewModels
 {
@@ -17,11 +20,13 @@ namespace PlotsVisualizer.ViewModels
         {
             Signal = signal ?? throw new ArgumentNullException(nameof(signal));
             CalculateCommand = new RelayCommand(CalculateHistogram, () => DomainsCount > 1 && DomainsCount < 100);
+            SavePlotImageCommand = new RelayCommand(SavePlotImage);
 
             CalculateHistogram();
         }
 
         public IRaiseCanExecuteCommand CalculateCommand { get; }
+        public IRaiseCanExecuteCommand SavePlotImageCommand { get; }
 
         public Types.Signal Signal { get; set; }
 
@@ -93,6 +98,22 @@ namespace PlotsVisualizer.ViewModels
             }
 
             return domainsCounts;
+        }
+
+        private void SavePlotImage()
+        {
+            if (Histogram != null)
+            {
+                var pngExporter = new PngExporter { Width = 1200, Height = 800, Background = OxyColors.White };
+                string title = Signal.metadata == null
+                    ? $"Metadata unavailable"
+                    : $"{Signal.metadata.signalType}{(Signal.metadata.isContinous ? "Continous" : "Discrete")} f_sig {Signal.metadata.signalFrequency:0.##} f_sam {Signal.metadata.samplingFrequency:0.##}";
+
+                string filePath = Path.Combine(Directory.GetCurrentDirectory(), "histograms");
+                Directory.CreateDirectory(filePath);
+                filePath = Path.Combine(filePath, Path.ChangeExtension(title, "png"));
+                pngExporter.ExportToFile(Histogram, filePath);
+            }
         }
     }
 }
