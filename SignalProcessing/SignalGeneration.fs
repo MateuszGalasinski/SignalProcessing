@@ -28,13 +28,12 @@ module SignalGeneration =
 
     let randomNoiseSource meta = 
         let random = System.Random()
-        fun _ -> random.NextDouble() * meta.amplitude
+        fun _ -> (random.NextDouble() - 1.0/2.0) * 2.0 * meta.amplitude
 
     let gaussianNoiseSource meta = 
         let random = System.Random()
         let randomSource = fun _ -> 
-            1.0 + (sqrt (-2.0 * Math.Log(random.NextDouble()))) * (sin (2.0 * Math.PI * random.NextDouble()))
-            //TODO check super random 
+            (sqrt (-2.0 * Math.Log(random.NextDouble()))) * (sin (2.0 * Math.PI * random.NextDouble()))
         fun _ -> randomSource() * meta.amplitude
     
     let impulseNoiseResponse (meta : SignalMetadata) =
