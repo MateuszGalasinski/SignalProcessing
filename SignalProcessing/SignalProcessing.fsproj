@@ -10,6 +10,7 @@
     <Compile Include="Operations.fs" />
     <Compile Include="StatisticsDiscrete.fs" />
     <Compile Include="StatisticsContinous.fs" />
+    <Compile Include="Quantization.fs" />
   </ItemGroup>
 
   <ItemGroup>
