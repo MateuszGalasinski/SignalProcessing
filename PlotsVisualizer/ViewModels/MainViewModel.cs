@@ -1,16 +1,16 @@
-﻿using Microsoft.FSharp.Collections;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Media;
+using System.Windows;
+using Microsoft.FSharp.Collections;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using OxyPlot;
 using OxyPlot.Wpf;
 using PlotsVisualizer.Views;
 using SignalProcessing;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Media;
-using System.Windows;
 using UILogic.Base;
 using LineSeries = OxyPlot.Series.LineSeries;
 using Plot = PlotsVisualizer.Models.Plot;
@@ -35,7 +35,8 @@ namespace PlotsVisualizer.ViewModels
         private int _firstChosenPlot = 0;
         private int _secondChosenPlot = 1;
         private bool _isContinous;
-        private List<Plot> Plots { get; } = new List <Plot>();
+        private int _quantizationBits = 2;
+        private List<Plot> Plots { get; } = new List<Plot>();
 
 
         #region observable props
@@ -114,6 +115,11 @@ namespace PlotsVisualizer.ViewModels
             get => _isContinous;
             set => SetProperty(ref _isContinous, value);
         }
+        public int QuantizationBits
+        {
+            get => _quantizationBits;
+            set => SetProperty(ref _quantizationBits, value);
+        }
 
         #endregion
 
@@ -132,6 +138,7 @@ namespace PlotsVisualizer.ViewModels
         public IRaiseCanExecuteCommand SubstractCommand { get; }
         public IRaiseCanExecuteCommand MultiplyCommand { get; }
         public IRaiseCanExecuteCommand DivideCommand { get; }
+        public IRaiseCanExecuteCommand QuantizeCommand { get; }
 
         public IRaiseCanExecuteCommand ShowStatsCommand { get; }
         public IRaiseCanExecuteCommand ShowHistogramCommand { get; }
@@ -140,17 +147,18 @@ namespace PlotsVisualizer.ViewModels
 
         public MainViewModel()
         {
-            NextPlotCommand =  new RelayCommand(MoveToNextPlot);
-            PreviousPlotCommand =  new RelayCommand(MoveToPreviousPlot);
-            ReadFilePathCommand =  new RelayCommand(ReadFilePath);
-            SavePlotCommand =  new RelayCommand(SaveToFile, () => !string.IsNullOrWhiteSpace(FileName));
-            LoadPlotCommand =  new RelayCommand(LoadFromFile, () => File.Exists(FileName));
-            AddPlotCommand =  new RelayCommand(AddNewPlot);
-            DeleteCommand =  new RelayCommand(() => RemovePlot(CurrentPlotIndex));
+            NextPlotCommand = new RelayCommand(MoveToNextPlot);
+            PreviousPlotCommand = new RelayCommand(MoveToPreviousPlot);
+            ReadFilePathCommand = new RelayCommand(ReadFilePath);
+            SavePlotCommand = new RelayCommand(SaveToFile, () => !string.IsNullOrWhiteSpace(FileName));
+            LoadPlotCommand = new RelayCommand(LoadFromFile, () => File.Exists(FileName));
+            AddPlotCommand = new RelayCommand(AddNewPlot);
+            DeleteCommand = new RelayCommand(() => RemovePlot(CurrentPlotIndex));
             AddCommand = new RelayCommand(() => PlotOperate(Operations.OperationType.Addition));
             SubstractCommand = new RelayCommand(() => PlotOperate(Operations.OperationType.Substraction));
             MultiplyCommand = new RelayCommand(() => PlotOperate(Operations.OperationType.Multiplication));
             DivideCommand = new RelayCommand(() => PlotOperate(Operations.OperationType.Division));
+            QuantizeCommand = new RelayCommand(Quantize);
             ShowStatsCommand = new RelayCommand(ShowStats);
             ShowHistogramCommand = new RelayCommand(ShowHistogram);
             SavePlotImageCommand = new RelayCommand(SavePlotImage);
@@ -230,7 +238,7 @@ namespace PlotsVisualizer.ViewModels
         private void LoadFromFile()
         {
             try
-            {   
+            {
                 string path = Path.ChangeExtension(Path.Combine(Directory.GetCurrentDirectory(), FileName), "json");
 
                 Types.Signal signal = null;
@@ -252,7 +260,7 @@ namespace PlotsVisualizer.ViewModels
                 Debug.WriteLine(e);
                 MessageBox.Show("Could not load plot from specified file.");
             }
-           
+
             SystemSounds.Beep.Play();
         }
 
@@ -313,8 +321,8 @@ namespace PlotsVisualizer.ViewModels
         private PlotModel CreatePlot(FSharpList<Types.Point> points, string title)
         {
             var plot = new PlotModel { Title = title };
-            var series = new LineSeries { LineStyle = LineStyle.None, MarkerType = MarkerType.Circle, MarkerSize = 1, MarkerFill = OxyColors.SlateGray};
-            int step = (int)Math.Ceiling((double) points.Length / stepDivisor);
+            var series = new LineSeries { LineStyle = LineStyle.None, MarkerType = MarkerType.Circle, MarkerSize = 1, MarkerFill = OxyColors.SlateGray };
+            int step = (int)Math.Ceiling((double)points.Length / stepDivisor);
             Types.Point point = null;
             for (int i = 0; i < points.Length; i += step)
             {
@@ -395,14 +403,38 @@ namespace PlotsVisualizer.ViewModels
                 MessageBox.Show("Could not operate successfully on these plots. Cleaned up plots.");
                 while (Plots.Count != 0)
                 {
-                    RemovePlot(PlotsCount-1);
+                    RemovePlot(PlotsCount - 1);
                 }
+            }
+        }
+
+        private void Quantize()
+        {
+            if (CurrentPlot == null)
+            {
+                return;
+            }
+            try
+            {
+                var newPoints = Quantization.quantizate(CurrentPlot.Signal.points, QuantizationBits);
+                var meta = CurrentPlot.Signal.metadata;
+                string title = meta == null
+                    ? $"{meta.startTime} metadata unavailable"
+                    : $"{meta.startTime} {(meta.isContinous ? "Continous" : "Discrete")} f_sig: {meta.signalFrequency:0.##} f_sam: {meta.samplingFrequency:0.##}";
+                var newSignal = new Types.Signal(meta, newPoints);
+                AddPlot(
+                    CreatePlot(newSignal.points, title),
+                    newSignal);
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Could not operate successfully on these plots. Cleaned up plots.");
             }
         }
 
         private void ShowStats()
         {
-            if(CurrentPlot != null)
+            if (CurrentPlot != null)
             {
                 SignalParametersWindow statsWindow = new SignalParametersWindow(new SignalParametersViewModel(CurrentPlot.Signal));
                 statsWindow.Show();

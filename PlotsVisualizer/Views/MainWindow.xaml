@@ -109,6 +109,11 @@
         <Button Content="/" Command="{Binding DivideCommand}" FontSize="16" Margin="5"
                 VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Grid.Row="4" Grid.Column="9" Background="Goldenrod"></Button>
 
+        <TextBlock FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="5" Grid.Column="4">Bits number</TextBlock>
+        <TextBox FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Top"  MinWidth="80" MaxWidth="80" Grid.Row="5" Grid.Column="5"
+                 Text="{Binding QuantizationBits}"></TextBox>
+        <Button Content="Quantize" Command="{Binding QuantizeCommand}" FontSize="16" Margin="5"
+                VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Grid.Row="5" Grid.Column="6" Background="Goldenrod"></Button>
 
         <oxy:PlotView Grid.Row="5" Grid.RowSpan="5" Grid.ColumnSpan="12" Model="{Binding CurrentPlot.PlotModel}" Margin="20,30,20,30" />
 

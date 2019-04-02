@@ -18,8 +18,13 @@ module Quantization =
         points
         |> List.map (fun p -> 
                 values 
-                |> List.map (fun v -> abs (v - p.y.r))
+                |> List.map (fun v -> (abs (v - p.y.r), v, p.x))
                 |> List.fold (fun currentMin v ->
-                    min currentMin v) (Double.MaxValue)
-            )
-
+                    let (dist, _, _) = v
+                    let (currMinDist, _, _) = currentMin
+                    if(dist < currMinDist) then
+                        v
+                    else 
+                        currentMin
+                    )((Double.MaxValue, Double.MaxValue, Double.MaxValue)))
+                |> List.map (fun (_, value, x) -> new Point(x, new Complex(value, 0.0)))
