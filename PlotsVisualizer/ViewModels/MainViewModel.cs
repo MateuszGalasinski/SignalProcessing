@@ -35,6 +35,8 @@ namespace PlotsVisualizer.ViewModels
         private Types.SignalType _signalType;
         private int _firstChosenPlot = 0;
         private int _secondChosenPlot = 1;
+        private int _firstToCompare = 0;
+        private int _secondToCompare = 1;
         private bool _isContinous;
         private int _quantizationBits = 2;
         private double _extrapolationFrequency = 2000;
@@ -112,6 +114,16 @@ namespace PlotsVisualizer.ViewModels
             get => _secondChosenPlot;
             set => SetProperty(ref _secondChosenPlot, value);
         }
+        public int FirstToCompare
+        {
+            get => _firstToCompare;
+            set => SetProperty(ref _firstToCompare, value);
+        }
+        public int SecondToCompare
+        {
+            get => _secondToCompare;
+            set => SetProperty(ref _secondToCompare, value);
+        }
 
         public bool IsContinous
         {
@@ -148,12 +160,12 @@ namespace PlotsVisualizer.ViewModels
         public IRaiseCanExecuteCommand QuantizeCommand { get; }
         public IRaiseCanExecuteCommand ExtrapolateZeroCommand { get; }
         public IRaiseCanExecuteCommand ExtrapolateSincCommand { get; }
+        public IRaiseCanExecuteCommand ShowErrorsCommand { get; }
 
         public IRaiseCanExecuteCommand ShowStatsCommand { get; }
         public IRaiseCanExecuteCommand ShowHistogramCommand { get; }
         public IRaiseCanExecuteCommand SavePlotImageCommand { get; }
         #endregion
-
         public MainViewModel()
         {
             NextPlotCommand = new RelayCommand(MoveToNextPlot);
@@ -173,6 +185,7 @@ namespace PlotsVisualizer.ViewModels
             ShowHistogramCommand = new RelayCommand(ShowHistogram);
             SavePlotImageCommand = new RelayCommand(SavePlotImage);
             ExtrapolateSincCommand = new RelayCommand(ExtrapolateSinc);
+            ShowErrorsCommand = new RelayCommand(ShowErrors);
 
             SignalType = Types.SignalType.GaussianNoise;
         }
@@ -465,6 +478,42 @@ namespace PlotsVisualizer.ViewModels
                 histogramWindow.Show();
             }
         }
+
+        private void ShowErrors()
+        {
+            if (FirstToCompare > PlotsCount || SecondToCompare > PlotsCount)
+            {
+                MessageBox.Show($"Invalid plots indexes. Maximum plot index is: {PlotsCount}");
+                return;
+            }
+
+            if (FirstToCompare == SecondToCompare)
+            {
+                MessageBox.Show($"Choose two different plots.");
+                return;
+            }
+
+            var first = Plots[FirstToCompare].Signal;
+            var second = Plots[SecondToCompare].Signal;
+
+            if (first.points.Length != second.points.Length)
+            {
+                MessageBox.Show("Chosen plots are incompatible for operation.");
+                return;
+            }
+
+            for (int i = 0; i < first.points.Length; i++)
+            {
+                if (first.points[i].x != second.points[i].x)
+                {
+                    MessageBox.Show("Plots have different x values.");
+                    return;
+                }
+            }
+
+            ErrorWindow window = new ErrorWindow(new ErrorsViewModel(first, second));
+            window.Show();
+        }
         #endregion
 
         #region extrapolcation
@@ -525,7 +574,7 @@ namespace PlotsVisualizer.ViewModels
         private List<Types.Point> GenerateSincExtrapolation()
         {
             double newFreq = ExtrapolationFrequency;
-            int howManyPoints = 4;
+            int howManyPoints = 8;
             double startTime = CurrentPlot.Signal.metadata.startTime;
             double duration = CurrentPlot.Signal.metadata.duration;
             double samplingFreq = CurrentPlot.Signal.metadata.samplingFrequency;
@@ -543,7 +592,7 @@ namespace PlotsVisualizer.ViewModels
                 new Types.Point(x, new Types.Complex(
                     pointsWithN
                         .OrderBy(p => Math.Abs(p.p.x - x))
-                        .Take(2 * howManyPoints)
+                        .Take(Math.Max(2 * howManyPoints, pointsWithN.Count))
                         .Select(c =>
                         {
                             return c.p.y.r* Sinc(x / T - c.n);

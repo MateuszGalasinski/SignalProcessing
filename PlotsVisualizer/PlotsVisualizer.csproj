@@ -88,7 +88,11 @@
     <Compile Include="Helpers\EnumHelper.cs" />
     <Compile Include="Helpers\EnumToCollectionConverter.cs" />
     <Compile Include="Models\Plot.cs" />
+    <Compile Include="ViewModels\ErrorsViewModel.cs" />
     <Compile Include="ViewModels\HistogramViewModel.cs" />
+    <Compile Include="Views\ErrorWindow.xaml.cs">
+      <DependentUpon>ErrorWindow.xaml</DependentUpon>
+    </Compile>
     <Compile Include="Views\HistogramWindow.xaml.cs">
       <DependentUpon>HistogramWindow.xaml</DependentUpon>
     </Compile>
@@ -97,6 +101,10 @@
     </Compile>
     <Compile Include="ViewModels\MainViewModel.cs" />
     <Compile Include="ViewModels\SignalParametersViewModel.cs" />
+    <Page Include="Views\ErrorWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\HistogramWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

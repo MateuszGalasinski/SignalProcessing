@@ -53,8 +53,6 @@
             </i:Interaction.Triggers>
         </TextBox>
 
-        <!--<TextBlock FontSize="16" HorizontalAlignment="Center" Foreground="Goldenrod" VerticalAlignment="Center" Grid.Row="3" Grid.Column="1">Plot number -> </TextBlock>-->
-
         <!--#region New signal -->
         <Rectangle Fill="Gainsboro" Grid.Row="0" Grid.RowSpan="3" Grid.Column="4" Grid.ColumnSpan="6"/>
 
@@ -126,6 +124,14 @@
 
         <Button Content="Extrapolate sinc" Command="{Binding ExtrapolateSincCommand}" FontSize="16" Margin="5"
                 VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Grid.Row="6" Grid.Column="7" Background="Goldenrod"></Button>
+
+        <Button Content="Choose signals to calculate error" Command="{Binding ShowErrorsCommand}" FontSize="16" Margin="5"
+                VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Grid.Row="5" Grid.Column="8" Grid.ColumnSpan="2" Background="Goldenrod"></Button>
+        <TextBox FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"  MinWidth="80" MaxWidth="80" Grid.Row="6" Grid.Column="8"
+                 Text="{Binding FirstToCompare}"></TextBox>
+        <TextBox FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"  MinWidth="80" MaxWidth="80" Grid.Row="6" Grid.Column="9"
+                 Text="{Binding SecondToCompare}"></TextBox>
+
 
         <oxy:PlotView Grid.Row="7" Grid.RowSpan="5" Grid.ColumnSpan="12" Model="{Binding CurrentPlot.PlotModel}" Margin="20,30,20,30" />
 

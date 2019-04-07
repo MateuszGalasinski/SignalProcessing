@@ -11,6 +11,7 @@
     <Compile Include="StatisticsDiscrete.fs" />
     <Compile Include="StatisticsContinous.fs" />
     <Compile Include="Quantization.fs" />
+    <Compile Include="ErrorCalculations.fs" />
   </ItemGroup>
 
   <ItemGroup>
