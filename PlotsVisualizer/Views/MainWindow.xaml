@@ -22,6 +22,7 @@
             <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
+            <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="10*"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
@@ -119,11 +120,15 @@
         <TextBox FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Top"  MinWidth="80" MaxWidth="80" 
                  Grid.Row="6" Grid.Column="5"
                  Text="{Binding ExtrapolationFrequency}"></TextBox>
+        <TextBlock FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="7" Grid.Column="4">Neighbours count</TextBlock>
+        <TextBox FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Top"  MinWidth="80" MaxWidth="80" 
+                 Grid.Row="7" Grid.Column="5"
+                 Text="{Binding ExtrapolationNeighboursCount}"></TextBox>
         <Button Content="Extrapolate 0" Command="{Binding ExtrapolateZeroCommand}" FontSize="16" Margin="5"
                 VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Grid.Row="6" Grid.Column="6" Background="Goldenrod"></Button>
 
         <Button Content="Extrapolate sinc" Command="{Binding ExtrapolateSincCommand}" FontSize="16" Margin="5"
-                VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Grid.Row="6" Grid.Column="7" Background="Goldenrod"></Button>
+                VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Grid.Row="7" Grid.Column="6" Background="Goldenrod"></Button>
 
         <Button Content="Choose signals to calculate error" Command="{Binding ShowErrorsCommand}" FontSize="16" Margin="5"
                 VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Grid.Row="5" Grid.Column="8" Grid.ColumnSpan="2" Background="Goldenrod"></Button>
@@ -133,11 +138,11 @@
                  Text="{Binding SecondToCompare}"></TextBox>
 
 
-        <oxy:PlotView Grid.Row="7" Grid.RowSpan="5" Grid.ColumnSpan="12" Model="{Binding CurrentPlot.PlotModel}" Margin="20,30,20,30" />
+        <oxy:PlotView Grid.Row="8" Grid.RowSpan="5" Grid.ColumnSpan="12" Model="{Binding CurrentPlot.PlotModel}" Margin="20,30,20,30" />
 
         <!--#region plots navigation -->
         <TextBlock FontSize="20" HorizontalAlignment="Center"  VerticalAlignment="Center" Margin="0, 0, 0, 5"
-                   Grid.Row="7" Grid.Column="1" Grid.RowSpan="2" Grid.ColumnSpan="2">
+                   Grid.Row="8" Grid.Column="1" Grid.RowSpan="2" Grid.ColumnSpan="2">
             <TextBlock.Text>
                 <MultiBinding StringFormat="{}{0}/{1}">
                     <Binding Path="CurrentPlotIndex" />
@@ -145,12 +150,12 @@
                 </MultiBinding>
             </TextBlock.Text>
         </TextBlock>
-        <Button Content="&lt;--------" Command="{Binding PreviousPlotCommand}" Grid.Row="8" Grid.Column="1" Margin="10, 10, 0, 10" Background="PaleGoldenrod"></Button>
-        <Button Content="--------&gt;" Command="{Binding NextPlotCommand}" Grid.Row="8" Grid.Column="2" Margin="0, 10, 10, 10" Background="PaleGoldenrod"></Button>
-        <!--#endregion-->
+        <Button Content="&lt;--------" Command="{Binding PreviousPlotCommand}" VerticalAlignment="Bottom"  Grid.Row="9" Grid.Column="1" Margin="0" Background="PaleGoldenrod"></Button>
+        <Button Content="--------&gt;" Command="{Binding NextPlotCommand}" VerticalAlignment="Bottom"  Grid.Row="9" Grid.Column="2" Margin="0" Background="PaleGoldenrod"></Button>
+        <Button Content="Delete" Command="{Binding DeleteCommand}" VerticalAlignment="Top" Grid.Row="9" Grid.Column="9" Margin="0" Background="DarkGoldenrod"></Button>
 
-        <Button Content="Delete" Command="{Binding DeleteCommand}" Grid.Row="8" Grid.Column="9" Margin="10" Background="DarkGoldenrod"></Button>
-        <Button Content="Show stats" Command="{Binding ShowStatsCommand}" Grid.Row="10" Grid.Column="9" Margin="10" Background="PaleGoldenrod"></Button>
-        <Button Content="Show histogram" Command="{Binding ShowHistogramCommand}" Grid.Row="10" Grid.Column="1" Margin="10" Background="PaleGoldenrod"></Button>
+        <Button Content="Show stats" Command="{Binding ShowStatsCommand}" VerticalAlignment="Bottom"  Grid.Row="11" Grid.Column="9" Margin="0" Background="PaleGoldenrod"></Button>
+        <Button Content="Show histogram" Command="{Binding ShowHistogramCommand}"  VerticalAlignment="Bottom" Grid.Row="11" Grid.Column="1" Margin="0" Background="PaleGoldenrod"></Button>
+        <!--#endregion-->
     </Grid>
 </Window>

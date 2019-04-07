@@ -40,7 +40,8 @@ namespace PlotsVisualizer.ViewModels
         private bool _isContinous;
         private int _quantizationBits = 2;
         private double _extrapolationFrequency = 2000;
-
+        private int _extrapolationNeighboursCount = 4;
+        
         private List<Plot> Plots { get; } = new List<Plot>();
 
 
@@ -124,6 +125,11 @@ namespace PlotsVisualizer.ViewModels
             get => _secondToCompare;
             set => SetProperty(ref _secondToCompare, value);
         }
+        public int ExtrapolationNeighboursCount
+        {
+            get => _extrapolationNeighboursCount;
+            set => SetProperty(ref _extrapolationNeighboursCount, value);
+        }
 
         public bool IsContinous
         {
@@ -141,7 +147,7 @@ namespace PlotsVisualizer.ViewModels
             set => SetProperty(ref _extrapolationFrequency, value);
         }
         #endregion
-
+        
         #region Commands
         public IRaiseCanExecuteCommand NextPlotCommand { get; }
         public IRaiseCanExecuteCommand PreviousPlotCommand { get; }
@@ -345,7 +351,7 @@ namespace PlotsVisualizer.ViewModels
         private PlotModel CreatePlot(FSharpList<Types.Point> points, string title)
         {
             var plot = new PlotModel { Title = title };
-            var series = new LineSeries { LineStyle = LineStyle.None, MarkerType = MarkerType.Circle, MarkerSize = 1, MarkerFill = OxyColors.SlateGray };
+            var series = new LineSeries { LineStyle = LineStyle.None, MarkerType = MarkerType.Circle, MarkerSize = 1.5, MarkerFill = OxyColors.SlateGray };
             int step = (int)Math.Ceiling((double)points.Length / stepDivisor);
             Types.Point point = null;
             for (int i = 0; i < points.Length; i += step)
@@ -574,7 +580,7 @@ namespace PlotsVisualizer.ViewModels
         private List<Types.Point> GenerateSincExtrapolation()
         {
             double newFreq = ExtrapolationFrequency;
-            int howManyPoints = 8;
+            int howManyPoints = ExtrapolationNeighboursCount * 2;
             double startTime = CurrentPlot.Signal.metadata.startTime;
             double duration = CurrentPlot.Signal.metadata.duration;
             double samplingFreq = CurrentPlot.Signal.metadata.samplingFrequency;
@@ -592,7 +598,7 @@ namespace PlotsVisualizer.ViewModels
                 new Types.Point(x, new Types.Complex(
                     pointsWithN
                         .OrderBy(p => Math.Abs(p.p.x - x))
-                        .Take(Math.Max(2 * howManyPoints, pointsWithN.Count))
+                        .Take(Math.Min(howManyPoints, pointsWithN.Count))
                         .Select(c =>
                         {
                             return c.p.y.r* Sinc(x / T - c.n);
