@@ -1,5 +1,7 @@
 ﻿namespace SignalProcessing
 
+open SignalGeneration
+
 module Quantization = 
     open System
 
@@ -28,3 +30,17 @@ module Quantization =
                         currentMin
                     )((Double.MaxValue, Double.MaxValue, Double.MaxValue)))
                 |> List.map (fun (_, value, x) -> new Point(x, new Complex(value, 0.0)))
+
+
+    let extrapolateZeroOrder (points:List<Point>) startTime duration newFrequency = 
+        generateXValues duration newFrequency startTime
+        |> List.map (fun x -> 
+            points 
+            |> List.fold (fun (maxX:Point) (p) -> 
+                if(maxX.x < p.x && p.x < x) then
+                   p
+                else
+                   maxX
+            )(new Point(Double.MinValue, new Complex(0.0, 0.0)))
+            |> fun p -> new Point(x, p.y)
+            )

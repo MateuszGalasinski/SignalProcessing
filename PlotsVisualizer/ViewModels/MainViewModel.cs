@@ -1,16 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
-using System.Media;
-using System.Windows;
-using Microsoft.FSharp.Collections;
+﻿using Microsoft.FSharp.Collections;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using OxyPlot;
 using OxyPlot.Wpf;
 using PlotsVisualizer.Views;
 using SignalProcessing;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.IO;
+using System.Linq;
+using System.Media;
+using System.Windows;
 using UILogic.Base;
 using LineSeries = OxyPlot.Series.LineSeries;
 using Plot = PlotsVisualizer.Models.Plot;
@@ -19,7 +20,7 @@ namespace PlotsVisualizer.ViewModels
 {
     class MainViewModel : BindableBase
     {
-        private const int stepDivisor = 4000;
+        private const int stepDivisor = 10000;
 
         private Plot _currentPlotModel;
         private int _currentPlotIndex = -1;
@@ -36,6 +37,8 @@ namespace PlotsVisualizer.ViewModels
         private int _secondChosenPlot = 1;
         private bool _isContinous;
         private int _quantizationBits = 2;
+        private double _extrapolationFrequency = 2000;
+
         private List<Plot> Plots { get; } = new List<Plot>();
 
 
@@ -120,7 +123,11 @@ namespace PlotsVisualizer.ViewModels
             get => _quantizationBits;
             set => SetProperty(ref _quantizationBits, value);
         }
-
+        public double ExtrapolationFrequency
+        {
+            get => _extrapolationFrequency;
+            set => SetProperty(ref _extrapolationFrequency, value);
+        }
         #endregion
 
         #region Commands
@@ -139,6 +146,8 @@ namespace PlotsVisualizer.ViewModels
         public IRaiseCanExecuteCommand MultiplyCommand { get; }
         public IRaiseCanExecuteCommand DivideCommand { get; }
         public IRaiseCanExecuteCommand QuantizeCommand { get; }
+        public IRaiseCanExecuteCommand ExtrapolateZeroCommand { get; }
+        public IRaiseCanExecuteCommand ExtrapolateSincCommand { get; }
 
         public IRaiseCanExecuteCommand ShowStatsCommand { get; }
         public IRaiseCanExecuteCommand ShowHistogramCommand { get; }
@@ -159,9 +168,11 @@ namespace PlotsVisualizer.ViewModels
             MultiplyCommand = new RelayCommand(() => PlotOperate(Operations.OperationType.Multiplication));
             DivideCommand = new RelayCommand(() => PlotOperate(Operations.OperationType.Division));
             QuantizeCommand = new RelayCommand(Quantize);
+            ExtrapolateZeroCommand = new RelayCommand(ExtrapolateZero);
             ShowStatsCommand = new RelayCommand(ShowStats);
             ShowHistogramCommand = new RelayCommand(ShowHistogram);
             SavePlotImageCommand = new RelayCommand(SavePlotImage);
+            ExtrapolateSincCommand = new RelayCommand(ExtrapolateSinc);
 
             SignalType = Types.SignalType.GaussianNoise;
         }
@@ -408,6 +419,7 @@ namespace PlotsVisualizer.ViewModels
             }
         }
 
+        #region quantize
         private void Quantize()
         {
             if (CurrentPlot == null)
@@ -422,6 +434,7 @@ namespace PlotsVisualizer.ViewModels
                     ? $"{meta.startTime} metadata unavailable"
                     : $"{meta.startTime} {(meta.isContinous ? "Continous" : "Discrete")} f_sig: {meta.signalFrequency:0.##} f_sam: {meta.samplingFrequency:0.##}";
                 var newSignal = new Types.Signal(meta, newPoints);
+                RemovePlot(CurrentPlotIndex);
                 AddPlot(
                     CreatePlot(newSignal.points, title),
                     newSignal);
@@ -431,7 +444,10 @@ namespace PlotsVisualizer.ViewModels
                 MessageBox.Show("Could not operate successfully on these plots. Cleaned up plots.");
             }
         }
+        #endregion
 
+
+        #region new Windows
         private void ShowStats()
         {
             if (CurrentPlot != null)
@@ -449,5 +465,96 @@ namespace PlotsVisualizer.ViewModels
                 histogramWindow.Show();
             }
         }
+        #endregion
+
+        #region extrapolcation
+        private void ExtrapolateZero()
+        {
+            if (CurrentPlot == null)
+            {
+                return;
+            }
+            try
+            {
+                var meta = CurrentPlot.Signal.metadata;
+                var newPoints = Quantization.extrapolateZeroOrder(CurrentPlot.Signal.points,
+                    meta.startTime,
+                    meta.duration,
+                    ExtrapolationFrequency
+                );
+                string title = meta == null
+                    ? $"{meta.startTime} metadata unavailable"
+                    : $"{meta.startTime} {(meta.isContinous ? "Continous" : "Discrete")} f_sig: {meta.signalFrequency:0.##} f_sam: {ExtrapolationFrequency:0.##}";
+                RemovePlot(CurrentPlotIndex);
+                var newSignal = new Types.Signal(meta, newPoints);
+                AddPlot(
+                    CreatePlot(newSignal.points, title),
+                    newSignal);
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Could not operate successfully on these plots. Cleaned up plots.");
+            }
+        }
+
+        private void ExtrapolateSinc()
+        {
+            if (CurrentPlot == null)
+            {
+                return;
+            }
+            try
+            {
+                var meta = CurrentPlot.Signal.metadata;
+                var newPoints = GenerateSincExtrapolation();
+                string title = meta == null
+                    ? $"{meta.startTime} metadata unavailable"
+                    : $"extrapolated sinc {meta.startTime} {(meta.isContinous ? "Continous" : "Discrete")} f_sig: {meta.signalFrequency:0.##} f_sam: {ExtrapolationFrequency:0.##}";
+                RemovePlot(CurrentPlotIndex);
+                var newSignal = new Types.Signal(meta, ListModule.OfSeq(newPoints));
+                AddPlot(
+                    CreatePlot(newSignal.points, title),
+                    newSignal);
+            }
+            catch (Exception)
+            {
+                MessageBox.Show("Could not operate successfully on these plots. Cleaned up plots.");
+            }
+        }
+
+        private List<Types.Point> GenerateSincExtrapolation()
+        {
+            double newFreq = ExtrapolationFrequency;
+            int howManyPoints = 4;
+            double startTime = CurrentPlot.Signal.metadata.startTime;
+            double duration = CurrentPlot.Signal.metadata.duration;
+            double samplingFreq = CurrentPlot.Signal.metadata.samplingFrequency;
+            List<Types.Point> points = CurrentPlot.Signal.points.ToList();
+
+            List<(Types.Point p, int n)> pointsWithN = new List<(Types.Point p, int n)>();
+            for (int i = 0; i < points.Count; i++)
+            {
+                pointsWithN.Add((points[i], i));
+            }
+
+            var newX = SignalGeneration.generateXValues(duration, newFreq, startTime).ToList();
+            double T = 1.0 / samplingFreq;
+            return newX.Select(x =>
+                new Types.Point(x, new Types.Complex(
+                    pointsWithN
+                        .OrderBy(p => Math.Abs(p.p.x - x))
+                        .Take(2 * howManyPoints)
+                        .Select(c =>
+                        {
+                            return c.p.y.r* Sinc(x / T - c.n);
+                        })
+                        .Sum(),
+                    0)))
+                .ToList();
+
+            double Sinc(double t) 
+                => t == 0 ? 1 : Math.Sin(Math.PI * t) / (Math.PI * t);
+        }
+        #endregion
     }
 }
