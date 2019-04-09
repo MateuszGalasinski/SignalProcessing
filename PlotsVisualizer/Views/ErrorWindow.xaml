@@ -17,6 +17,7 @@
             <ColumnDefinition Width="*"></ColumnDefinition>
             <ColumnDefinition Width="*"></ColumnDefinition>
             <ColumnDefinition Width="*"></ColumnDefinition>
+            <ColumnDefinition Width="*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
 
         <TextBlock Text="MSE" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="0" Grid.Column="0"></TextBlock>
@@ -30,5 +31,8 @@
 
         <TextBlock Text="MD" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="0" Grid.Column="3"></TextBlock>
         <TextBlock Text="{Binding MaximumDifference}" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="1" Grid.Column="3"></TextBlock>
+
+        <Button Content="Remember" Command="{Binding RememberResultsCommand}" Grid.Row="0" Grid.Column="4" Background="Goldenrod"></Button>
+        <Button Content="Save to file" Command="{Binding SaveResultsCommand}" Grid.Row="1" Grid.Column="4" Background="Goldenrod"></Button>
     </Grid>
 </Window>

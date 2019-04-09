@@ -6,6 +6,7 @@ using OxyPlot.Wpf;
 using PlotsVisualizer.Views;
 using SignalProcessing;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -31,8 +32,8 @@ namespace PlotsVisualizer.ViewModels
         private double _duration = 5;
         private double _dutyCycle = 0.5;
         private double _signalFrequency = 1;
-        private double _samplingFrequency = 800;
-        private Types.SignalType _signalType;
+        private double _samplingFrequency = 2000;
+        private Types.SignalType _signalType = Types.SignalType.Sin;
         private int _firstChosenPlot = 0;
         private int _secondChosenPlot = 1;
         private int _firstToCompare = 0;
@@ -192,8 +193,6 @@ namespace PlotsVisualizer.ViewModels
             SavePlotImageCommand = new RelayCommand(SavePlotImage);
             ExtrapolateSincCommand = new RelayCommand(ExtrapolateSinc);
             ShowErrorsCommand = new RelayCommand(ShowErrors);
-
-            SignalType = Types.SignalType.GaussianNoise;
         }
 
         #region plot navigation
@@ -517,7 +516,7 @@ namespace PlotsVisualizer.ViewModels
                 }
             }
 
-            ErrorWindow window = new ErrorWindow(new ErrorsViewModel(first, second));
+            ErrorWindow window = new ErrorWindow(new ErrorsViewModel(first, second, ExtrapolationNeighboursCount, first.metadata.samplingFrequency));
             window.Show();
         }
         #endregion
@@ -592,9 +591,11 @@ namespace PlotsVisualizer.ViewModels
                 pointsWithN.Add((points[i], i));
             }
 
-            var newX = SignalGeneration.generateXValues(duration, newFreq, startTime).ToList();
+            ConcurrentBag<double> newX = new ConcurrentBag<double>(SignalGeneration.generateXValues(duration, newFreq, startTime).ToList());
             double T = 1.0 / samplingFreq;
-            return newX.Select(x =>
+            return newX
+                .AsParallel()
+                .Select(x =>
                 new Types.Point(x, new Types.Complex(
                     pointsWithN
                         .OrderBy(p => Math.Abs(p.p.x - x))
@@ -605,6 +606,7 @@ namespace PlotsVisualizer.ViewModels
                         })
                         .Sum(),
                     0)))
+                .OrderBy(p => p.x)
                 .ToList();
 
             double Sinc(double t) 
