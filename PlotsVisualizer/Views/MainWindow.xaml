@@ -11,8 +11,50 @@
         mc:Ignorable="d"
         Title="MainWindow" Height="800" Width="1400"
         Background="SlateGray">
+
+    <Window.Resources>
+        <Style TargetType="{x:Type Button}">
+            <Setter Property="Background" Value="Goldenrod" />
+            <Setter Property="Foreground" Value="#000000" />
+            <Setter Property="FontSize" Value="15" />
+            <Setter Property="Margin" Value="2,5,2,5" />
+            <Setter Property="SnapsToDevicePixels" Value="True"/>
+
+                <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="{x:Type Button}">
+                        <Border CornerRadius="6" Background="{TemplateBinding Background}">
+                            <Grid>
+                                <Line X1="0" Y1="0" X2="1" Y2="0" Stretch="Fill" VerticalAlignment="Bottom" Grid.RowSpan="2">
+                                    <Line.Stroke>
+                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
+                                            <GradientStop Color="SlateGray" Offset="0" />
+                                            <GradientStop Color="DarkSlateGray" Offset="1" />
+                                        </LinearGradientBrush>
+                                    </Line.Stroke>
+                                </Line>
+                                <ContentPresenter x:Name="MyContentPresenter" Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                            </Grid>
+                        </Border>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter Property="Background" Value="DarkGoldenrod" />
+                                <Setter Property="Foreground" Value="Gold"/>
+                            </Trigger>
+
+                            <Trigger Property="IsPressed" Value="True">
+                                <Setter Property="Foreground" Value="White" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
     <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
             <RowDefinition Height="*"></RowDefinition>
@@ -28,7 +70,7 @@
             <RowDefinition Height="*"></RowDefinition>
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="1*"></ColumnDefinition>
+            <ColumnDefinition Width="0.5*"></ColumnDefinition>
             <ColumnDefinition Width="2*"></ColumnDefinition>
             <ColumnDefinition Width="2*"></ColumnDefinition>
             <ColumnDefinition Width="2*"></ColumnDefinition>
@@ -38,14 +80,15 @@
             <ColumnDefinition Width="2*"></ColumnDefinition>
             <ColumnDefinition Width="2*"></ColumnDefinition>
             <ColumnDefinition Width="2*"></ColumnDefinition>
-            <ColumnDefinition Width="1*"></ColumnDefinition>
+            <ColumnDefinition Width="0.5*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
+        <!--#region Read save -->
 
-        <Button Content="Save to file" Command="{Binding SavePlotCommand}" Grid.Row="2" Grid.Column="1" Background="Goldenrod"></Button>
-        <Button Content="Load from file" Command="{Binding LoadPlotCommand}" Grid.Row="2" Grid.Column="2" Background="Goldenrod"></Button>
-        <TextBlock Text="Save/Read file name: " FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="0" Grid.Column="1" Grid.ColumnSpan="2"></TextBlock>
+        <Rectangle Grid.Row="0" Grid.RowSpan="4" Grid.Column="8" Grid.ColumnSpan="2"
+                   Fill="Gainsboro"/>
+        <TextBlock Text="Save/Read file name: " FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="0" Grid.Column="8" Grid.ColumnSpan="2"></TextBlock>
         <TextBox Text="{Binding FileName, Mode=OneWay}" FontSize="16" MinWidth="200" MaxWidth="200"
-                 HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"
+                 HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="1" Grid.Column="8" Grid.ColumnSpan="2"
                  IsReadOnly="True">
             <i:Interaction.Triggers>
                 <i:EventTrigger EventName="MouseDoubleClick" >
@@ -53,97 +96,124 @@
                 </i:EventTrigger>
             </i:Interaction.Triggers>
         </TextBox>
+        <Button Content="Save to file" Background="PaleGoldenrod" Command="{Binding SavePlotCommand}" Grid.Row="2" Grid.Column="9" ></Button>
+        <Button Content="Load from file" Background="PaleGoldenrod" Command="{Binding LoadPlotCommand}" Grid.Row="2" Grid.Column="8" ></Button>
+
+        <Button Content="Save plot to image" Background="PaleGoldenrod" Command="{Binding SavePlotImageCommand}" 
+                Grid.Row="3" Grid.Column="8" Grid.ColumnSpan="2" ></Button>
+
+        <!--#endregion -->
 
         <!--#region New signal -->
-        <Rectangle Fill="Gainsboro" Grid.Row="0" Grid.RowSpan="3" Grid.Column="4" Grid.ColumnSpan="6"/>
+        <Rectangle Fill="Gainsboro" Grid.Row="0" Margin="20,0,0,0" Grid.RowSpan="4" Grid.Column="0" Grid.ColumnSpan="5"/>
 
-        <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Bottom" Foreground="Goldenrod" Grid.Row="0" Grid.Column="4">Amplitude</TextBlock>
-        <TextBox FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Goldenrod" MinWidth="80" MaxWidth="80" Grid.Row="1" Grid.Column="4"
-                 Text="{Binding Amplitude}"></TextBox>
-
-        <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Bottom" Foreground="Goldenrod" Grid.Row="0" Grid.Column="5">StartTime</TextBlock>
-        <TextBox FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Goldenrod" MinWidth="80" MaxWidth="80" Grid.Row="1" Grid.Column="5"
+        <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="1">StartTime</TextBlock>
+        <TextBox FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="80" MaxWidth="80" Grid.Row="1" Grid.Column="1"
                  Text="{Binding StartTime}"></TextBox>
 
-        <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Bottom" Foreground="Goldenrod" Grid.Row="0" Grid.Column="6">Duration</TextBlock>
-        <TextBox FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Goldenrod" MinWidth="80" MaxWidth="80" Grid.Row="1" Grid.Column="6"
+        <TextBlock Grid.Row="2" Grid.Column="1"
+            FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Bottom" >Amplitude</TextBlock>
+        <TextBox Grid.Row="3" Grid.Column="1"
+                 FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="80" MaxWidth="80"
+                 Text="{Binding Amplitude}"></TextBox>
+
+        <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="2">Duration</TextBlock>
+        <TextBox FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="80" MaxWidth="80" Grid.Row="1" Grid.Column="2"
                  Text="{Binding Duration}"></TextBox>
 
-        <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Bottom" Foreground="Goldenrod" Grid.Row="0" Grid.Column="7">DutyCycle</TextBlock>
-        <TextBox FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Goldenrod" MinWidth="80" MaxWidth="80" Grid.Row="1" Grid.Column="7"
+        <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="2" Grid.Column="2">DutyCycle</TextBlock>
+        <TextBox FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="80" MaxWidth="80" Grid.Row="3" Grid.Column="2"
                  Text="{Binding DutyCycle}"></TextBox>
 
-        <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Bottom" Foreground="Goldenrod" Grid.Row="0" Grid.Column="8">Frequency</TextBlock>
-        <TextBox FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Goldenrod" MinWidth="80" MaxWidth="80" Grid.Row="1" Grid.Column="8"
+        <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="3">Frequency</TextBlock>
+        <TextBox FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="80" MaxWidth="80" Grid.Row="1" Grid.Column="3"
                  Text="{Binding SignalFrequency}"></TextBox>
 
-        <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Bottom" Foreground="Goldenrod" Grid.Row="0" Grid.Column="9">Sampling freq.</TextBlock>
-        <TextBox FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Goldenrod" MinWidth="80" MaxWidth="80" Grid.Row="1" Grid.Column="9"
+        <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="2" Grid.Column="3">Sampling freq.</TextBlock>
+        <TextBox FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="80" MaxWidth="80" Grid.Row="3" Grid.Column="3"
                  Text="{Binding SamplingFrequency}"></TextBox>
 
-        <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Foreground="Goldenrod" Grid.Row="2" Grid.ColumnSpan="2" Grid.Column="6">Is continous ?</TextBlock>
-        <CheckBox HorizontalAlignment="Center" VerticalAlignment="Center" Margin="50, 0, 30, 0" Foreground="Goldenrod" Grid.Row="2" Grid.Column="7"
+        <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="4">Is continous ?</TextBlock>
+        <CheckBox HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="1" Grid.Column="4"
                   IsChecked="{Binding IsContinous}"></CheckBox>
 
-        <ComboBox Grid.Row="2" Grid.Column="8" FontSize="16" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                  ItemsSource="{Binding Path=SignalType, Converter={helpers:EnumToCollectionConverter}, Mode=OneTime}"
+        <ComboBox Grid.Row="2" Grid.Column="4"
+                  FontSize="16" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                  ItemsSource="{Binding Path=SignalType, Converter={helpers:SignalEnumToCollectionConverter}, Mode=OneTime}"
                   SelectedValue="{Binding Path=SignalType}" />
 
-        <Button Content="Add plot" Command="{Binding AddPlotCommand}" Grid.Row="2" Grid.Column="9" Background="PaleGoldenrod"></Button>
+        <Button Content="Add plot" Command="{Binding AddPlotCommand}" Grid.Row="3" Grid.Column="4" Background="PaleGoldenrod"></Button>
         <!--#endregion-->
-
-        <Button Content="Save plot to image" Command="{Binding SavePlotImageCommand}" 
-                Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2" Background="Goldenrod"></Button>
-
-        <Button Content="Generate filter" Command="{Binding GenerateFilterCommand}" 
-                Grid.Row="6" Grid.Column="1" Background="Goldenrod"></Button>
-        <Button Content="Convolute signals" Command="{Binding ConvoluteCommand}" 
-                Grid.Row="6" Grid.Column="2" Background="Goldenrod"></Button>
-
-        <TextBlock FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="3" Grid.Column="4" Grid.ColumnSpan="2">Choose signals to operate on</TextBlock>
-        <TextBox FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"  MinWidth="80" MaxWidth="80" Grid.Row="4" Grid.Column="4"
+        <TextBlock FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2">Choose signals to operate on</TextBlock>
+        <TextBox Grid.Row="5" Grid.Column="1" 
+                 FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"  MinWidth="80" MaxWidth="80"
                  Text="{Binding FirstChosenPlot}"></TextBox>
-        <TextBox FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"  MinWidth="80" MaxWidth="80" Grid.Row="4" Grid.Column="5"
+        <TextBox FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"  MinWidth="80" MaxWidth="80" Grid.Row="5" Grid.Column="2"
                  Text="{Binding SecondChosenPlot}"></TextBox>
 
-        <Button Content="+" Command="{Binding AddCommand}" FontSize="16" Margin="5"
-                VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Grid.Row="4" Grid.Column="6" Background="Goldenrod"></Button>
-        <Button Content="-" Command="{Binding SubstractCommand}" FontSize="16" Margin="5"
-                VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Grid.Row="4" Grid.Column="7" Background="Goldenrod"></Button>
-        <Button Content="*" Command="{Binding MultiplyCommand}" FontSize="16" Margin="5"
-                VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Grid.Row="4" Grid.Column="8" Background="Goldenrod"></Button>
-        <Button Content="/" Command="{Binding DivideCommand}" FontSize="16" Margin="5"
-                VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Grid.Row="4" Grid.Column="9" Background="Goldenrod"></Button>
+        <Button Content="Convolution" Command="{Binding ConvoluteCommand}" 
+                Grid.Row="8" Grid.Column="1" Grid.ColumnSpan="2"></Button>
 
-        <TextBlock FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="5" Grid.Column="4">Bits number</TextBlock>
-        <TextBox FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Top"  MinWidth="80" MaxWidth="80" Grid.Row="5" Grid.Column="5"
+        <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="5" Grid.Column="3">Filter type</TextBlock>
+        <ComboBox Grid.Row="5" Grid.Column="4"
+                  FontSize="16" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="10,5,10,5"
+                  ItemsSource="{Binding Path=FilterType, Converter={helpers:EnumToCollectionConverter}, Mode=OneTime}"
+                  SelectedValue="{Binding Path=FilterType}" />
+        <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="6" Grid.Column="3">Window function</TextBlock>
+        <ComboBox Grid.Row="6" Grid.Column="4"
+                  FontSize="16" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="10,5,10,5"
+                  ItemsSource="{Binding Path=WindowFunction, Converter={helpers:EnumToCollectionConverter}, Mode=OneTime}"
+                  SelectedValue="{Binding Path=WindowFunction}" />
+        <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="7" Grid.Column="3">Filter order</TextBlock>
+        <TextBox Grid.Row="7" Grid.Column="4" 
+                 HorizontalAlignment="Center" VerticalAlignment="Center" MaxHeight="25" MinWidth="80" MaxWidth="80"
+                 FontSize="20" Text="{Binding FilterOrder}"></TextBox>
+        <Button Content="Generate filter" Command="{Binding GenerateFilterCommand}" 
+                Grid.Row="8" Grid.Column="4" ></Button>
+
+
+        <Button Content="+" Command="{Binding AddCommand}" FontWeight="UltraBold"
+                VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Grid.Row="6" Grid.Column="1" ></Button>
+        <Button Content="-" Command="{Binding SubstractCommand}" FontWeight="UltraBold"
+                VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Grid.Row="6" Grid.Column="2" ></Button>
+        <Button Content="*" Command="{Binding MultiplyCommand}" FontWeight="UltraBold"
+                VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Grid.Row="7" Grid.Column="1" ></Button>
+        <Button Content="/" Command="{Binding DivideCommand}" FontWeight="UltraBold"
+                VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Grid.Row="7" Grid.Column="2" ></Button>
+
+        <Rectangle Fill="WhiteSmoke" Grid.Row="0" Grid.RowSpan="4" Grid.Column="5" Grid.ColumnSpan="3"/>
+
+        <TextBlock FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="0" Grid.Column="5">Bits number</TextBlock>
+        <TextBox FontSize="20" MaxHeight="25" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="80" MaxWidth="80" Grid.Row="0" Grid.Column="6"
                  Text="{Binding QuantizationBits}"></TextBox>
+
         <Button Content="Quantize" Command="{Binding QuantizeCommand}" FontSize="16" Margin="5"
-                VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Grid.Row="5" Grid.Column="6" Background="Goldenrod"></Button>
+                VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Grid.Row="0" Grid.Column="7" ></Button>
 
-        <TextBlock FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="6" Grid.Column="4">New frequency</TextBlock>
-        <TextBox FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Top"  MinWidth="80" MaxWidth="80" 
-                 Grid.Row="6" Grid.Column="5"
+        <TextBlock FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="1" Grid.Column="5">New frequency</TextBlock>
+        <TextBox FontSize="20" MaxHeight="25" HorizontalAlignment="Center" VerticalAlignment="Center"  MinWidth="80" MaxWidth="80" 
+                 Grid.Row="1" Grid.Column="6"
                  Text="{Binding ExtrapolationFrequency}"></TextBox>
-        <TextBlock FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Top" Grid.Row="7" Grid.Column="4">Neighbours count</TextBlock>
-        <TextBox FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Top"  MinWidth="80" MaxWidth="80" 
-                 Grid.Row="7" Grid.Column="5"
+
+        <TextBlock FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="2" Grid.Column="5">Neighbours count</TextBlock>
+        <TextBox FontSize="20" MaxHeight="25" HorizontalAlignment="Center" VerticalAlignment="Center"  MinWidth="80" MaxWidth="80" 
+                 Grid.Row="2" Grid.Column="6"
                  Text="{Binding ExtrapolationNeighboursCount}"></TextBox>
-        <Button Content="Extrapolate 0" Command="{Binding ExtrapolateZeroCommand}" FontSize="16" Margin="5"
-                VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Grid.Row="6" Grid.Column="6" Background="Goldenrod"></Button>
+        <Button Content="Extrapolate 0" Command="{Binding ExtrapolateZeroCommand}"
+                VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Grid.Row="1" Grid.Column="7" ></Button>
 
-        <Button Content="Extrapolate sinc" Command="{Binding ExtrapolateSincCommand}" FontSize="16" Margin="5"
-                VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Grid.Row="7" Grid.Column="6" Background="Goldenrod"></Button>
+        <Button Content="Extrapolate sinc" Command="{Binding ExtrapolateSincCommand}"
+                VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Grid.Row="2" Grid.Column="7" ></Button>
 
-        <Button Content="Choose signals to calculate error" Command="{Binding ShowErrorsCommand}" FontSize="16" Margin="5"
-                VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Grid.Row="5" Grid.Column="8" Grid.ColumnSpan="2" Background="Goldenrod"></Button>
-        <TextBox FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"  MinWidth="80" MaxWidth="80" Grid.Row="6" Grid.Column="8"
+        <Button Content="Calculate error" Command="{Binding ShowErrorsCommand}"
+                VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Grid.Row="3" Grid.Column="7" ></Button>
+        <TextBox FontSize="20" MaxHeight="25" HorizontalAlignment="Center" VerticalAlignment="Center"  MinWidth="80" MaxWidth="80" Grid.Row="3" Grid.Column="5"
                  Text="{Binding FirstToCompare}"></TextBox>
-        <TextBox FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"  MinWidth="80" MaxWidth="80" Grid.Row="6" Grid.Column="9"
+        <TextBox FontSize="20" MaxHeight="25" HorizontalAlignment="Center" VerticalAlignment="Center"  MinWidth="80" MaxWidth="80" Grid.Row="3" Grid.Column="6"
                  Text="{Binding SecondToCompare}"></TextBox>
 
 
-        <oxy:PlotView Grid.Row="8" Grid.RowSpan="5" Grid.ColumnSpan="12" Model="{Binding CurrentPlot.PlotModel}" Margin="20,30,20,30" />
+        <oxy:PlotView Grid.Row="8" Grid.RowSpan="6" Grid.ColumnSpan="12" Model="{Binding CurrentPlot.PlotModel}" Margin="20,30,20,30" />
 
         <!--#region plots navigation -->
         <TextBlock FontSize="20" HorizontalAlignment="Center"  VerticalAlignment="Center" Margin="0, 0, 0, 5"
@@ -155,12 +225,22 @@
                 </MultiBinding>
             </TextBlock.Text>
         </TextBlock>
-        <Button Content="&lt;--------" Command="{Binding PreviousPlotCommand}" VerticalAlignment="Bottom"  Grid.Row="9" Grid.Column="1" Margin="0" Background="PaleGoldenrod"></Button>
-        <Button Content="--------&gt;" Command="{Binding NextPlotCommand}" VerticalAlignment="Bottom"  Grid.Row="9" Grid.Column="2" Margin="0" Background="PaleGoldenrod"></Button>
-        <Button Content="Delete" Command="{Binding DeleteCommand}" VerticalAlignment="Top" Grid.Row="9" Grid.Column="9" Margin="0" Background="DarkGoldenrod"></Button>
+        <Button Content="&lt;--------" Command="{Binding PreviousPlotCommand}" VerticalAlignment="Bottom" 
+                Grid.Row="9" Grid.Column="1"
+                Background="PaleGoldenrod"></Button>
+        <Button Content="--------&gt;" Command="{Binding NextPlotCommand}" VerticalAlignment="Bottom" 
+                Grid.Row="9" Grid.Column="2" 
+                Background="PaleGoldenrod"></Button>
+        <Button Content="Delete" Command="{Binding DeleteCommand}" VerticalAlignment="Top"
+                Grid.Row="9" Grid.Column="9"
+                Background="PaleGoldenrod"></Button>
 
-        <Button Content="Show stats" Command="{Binding ShowStatsCommand}" VerticalAlignment="Bottom"  Grid.Row="11" Grid.Column="9" Margin="0" Background="PaleGoldenrod"></Button>
-        <Button Content="Show histogram" Command="{Binding ShowHistogramCommand}"  VerticalAlignment="Bottom" Grid.Row="11" Grid.Column="1" Margin="0" Background="PaleGoldenrod"></Button>
+        <Button Content="Show stats" Command="{Binding ShowStatsCommand}" VerticalAlignment="Bottom"
+                Grid.Row="12" Grid.Column="9"
+                Background="PaleGoldenrod"></Button>
+        <Button Content="Show histogram" Command="{Binding ShowHistogramCommand}"  VerticalAlignment="Bottom"
+                Grid.Row="12" Grid.Column="1"
+                Background="PaleGoldenrod"></Button>
         <!--#endregion-->
     </Grid>
 </Window>

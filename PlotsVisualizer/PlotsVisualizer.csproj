@@ -106,8 +106,9 @@
     <Compile Include="Base\IRaiseCanExecuteCommand.cs" />
     <Compile Include="Base\RelayCommand.cs" />
     <Compile Include="Helpers\ClearFocusOnClickBehavior.cs" />
-    <Compile Include="Helpers\EnumHelper.cs" />
+    <Compile Include="Helpers\SignalTypeEnumHelper.cs" />
     <Compile Include="Helpers\EnumToCollectionConverter.cs" />
+    <Compile Include="Helpers\SignalEnumToCollectionConverter.cs" />
     <Compile Include="Models\ErrorResults.cs" />
     <Compile Include="Models\Plot.cs" />
     <Compile Include="ViewModels\ErrorsViewModel.cs" />
