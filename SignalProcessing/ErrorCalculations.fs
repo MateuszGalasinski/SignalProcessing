@@ -11,15 +11,16 @@ module ErrorCalculations =
 
     let signalToNoiseRatio original processed = 
         10.0 * log10 (
-            original
-            |> List.sumBy (fun (p:Point) -> p.y.r ** 2.0)) 
-            / (noiseSquared original processed)
+            (original
+            |> List.sumBy (fun (p:Point) -> p.y.r ** 2.0))
+            / (noiseSquared original processed))
 
         
     let peakSignalToNoiseRatio original processed = 
         10.0 * log10 (
-            (original
-            |> List.maxBy (fun (p:Point) -> p.y.r)).y.r 
+            (
+                original
+                |> List.maxBy (fun (p:Point) -> p.y.r)).y.r 
             / (meanSquaredError original processed))
 
     let maxDifference original processed = 

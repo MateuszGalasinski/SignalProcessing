@@ -1,11 +1,4 @@
-﻿using Microsoft.FSharp.Collections;
-using Microsoft.Win32;
-using Newtonsoft.Json;
-using OxyPlot;
-using OxyPlot.Wpf;
-using PlotsVisualizer.Views;
-using SignalProcessing;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -13,6 +6,13 @@ using System.IO;
 using System.Linq;
 using System.Media;
 using System.Windows;
+using Microsoft.FSharp.Collections;
+using Microsoft.Win32;
+using Newtonsoft.Json;
+using OxyPlot;
+using OxyPlot.Wpf;
+using PlotsVisualizer.Views;
+using SignalProcessing;
 using UILogic.Base;
 using LineSeries = OxyPlot.Series.LineSeries;
 using Plot = PlotsVisualizer.Models.Plot;
@@ -29,10 +29,10 @@ namespace PlotsVisualizer.ViewModels
         private int _plotsCount = 0;
         private double _amplitude = 1;
         private double _startTime = 0;
-        private double _duration = 5;
+        private double _duration = 2;
         private double _dutyCycle = 0.5;
         private double _signalFrequency = 1;
-        private double _samplingFrequency = 2000;
+        private double _samplingFrequency = 10;
         private Types.SignalType _signalType = Types.SignalType.Sin;
         private int _firstChosenPlot = 0;
         private int _secondChosenPlot = 1;
@@ -172,7 +172,11 @@ namespace PlotsVisualizer.ViewModels
         public IRaiseCanExecuteCommand ShowStatsCommand { get; }
         public IRaiseCanExecuteCommand ShowHistogramCommand { get; }
         public IRaiseCanExecuteCommand SavePlotImageCommand { get; }
+
+        public IRaiseCanExecuteCommand ConvoluteCommand { get; }
+        public IRaiseCanExecuteCommand GenerateFilterCommand { get; }
         #endregion
+
         public MainViewModel()
         {
             NextPlotCommand = new RelayCommand(MoveToNextPlot);
@@ -193,6 +197,8 @@ namespace PlotsVisualizer.ViewModels
             SavePlotImageCommand = new RelayCommand(SavePlotImage);
             ExtrapolateSincCommand = new RelayCommand(ExtrapolateSinc);
             ShowErrorsCommand = new RelayCommand(ShowErrors);
+            ConvoluteCommand = new RelayCommand(Convolute);
+            GenerateFilterCommand = new RelayCommand(GenerateFilter);
         }
 
         #region plot navigation
@@ -551,29 +557,84 @@ namespace PlotsVisualizer.ViewModels
             }
         }
 
-        private void ExtrapolateSinc()
+        private void GenerateFilter()
         {
-            if (CurrentPlot == null)
+            var filter = Filters.generateFilter(Filters.WindowFunction.Hamming, 30, 0, 100);
+            AddPlot(
+                CreatePlot(filter.points, $"Filter: {Filters.WindowFunction.Hamming} M: {30}"),
+                filter);
+        }
+
+        private void Convolute()
+        {
+            if (FirstChosenPlot > PlotsCount || SecondChosenPlot > PlotsCount)
             {
+                MessageBox.Show($"Invalid plots indexes. Maximum plot index is: {PlotsCount}");
                 return;
             }
-            try
+
+            if (FirstChosenPlot == SecondChosenPlot)
             {
-                var meta = CurrentPlot.Signal.metadata;
-                var newPoints = GenerateSincExtrapolation();
-                string title = meta == null
-                    ? $"{meta.startTime} metadata unavailable"
-                    : $"extrapolated sinc {meta.startTime} {(meta.isContinous ? "Continous" : "Discrete")} f_sig: {meta.signalFrequency:0.##} f_sam: {ExtrapolationFrequency:0.##}";
-                RemovePlot(CurrentPlotIndex);
-                var newSignal = new Types.Signal(meta, ListModule.OfSeq(newPoints));
-                AddPlot(
-                    CreatePlot(newSignal.points, title),
-                    newSignal);
+                MessageBox.Show($"Choose two different plots.");
+                return;
             }
-            catch (Exception)
-            {
-                MessageBox.Show("Could not operate successfully on these plots. Cleaned up plots.");
-            }
+
+            var first = Plots[FirstChosenPlot].Signal;
+            var second = Plots[SecondChosenPlot].Signal;
+
+            var convoluted = SignalProcessing.Convolution.convolute(first,second);
+
+            AddPlot(
+                CreatePlot(convoluted.points, "test plot"),
+                convoluted);
+        }
+
+        private void ExtrapolateSinc()
+        {
+            var someSignal = SignalGeneration.signalGenerator(new Types.SignalMetadata(SignalType, IsContinous,
+                Amplitude, StartTime, Duration, DutyCycle, SignalFrequency, SamplingFrequency));
+            var testSignal = SignalProcessing.Convolution.convolute(
+                new Types.Signal(someSignal.metadata,
+                    ListModule.OfSeq(new List<Types.Point>()
+                    {
+                        new Types.Point(0, new Types.Complex(1, 0)),
+                        new Types.Point(1, new Types.Complex(2, 0)),
+                        new Types.Point(2, new Types.Complex(3, 0)),
+                        new Types.Point(3, new Types.Complex(4, 0)),
+                    })),
+                new Types.Signal(someSignal.metadata,
+                    ListModule.OfSeq(new List<Types.Point>()
+                    {
+                        new Types.Point(0, new Types.Complex(5, 0)),
+                        new Types.Point(1, new Types.Complex(6, 0)),
+                        new Types.Point(2, new Types.Complex(7, 0)),
+                    })));
+
+            AddPlot(
+                CreatePlot(testSignal.points, "test plot"),
+                testSignal);
+
+            //if (CurrentPlot == null)
+            //{
+            //    return;
+            //}
+            //try
+            //{
+            //    var meta = CurrentPlot.Signal.metadata;
+            //    var newPoints = GenerateSincExtrapolation();
+            //    string title = meta == null
+            //        ? $"{meta.startTime} metadata unavailable"
+            //        : $"extrapolated sinc {meta.startTime} {(meta.isContinous ? "Continous" : "Discrete")} f_sig: {meta.signalFrequency:0.##} f_sam: {ExtrapolationFrequency:0.##}";
+            //    RemovePlot(CurrentPlotIndex);
+            //    var newSignal = new Types.Signal(meta, ListModule.OfSeq(newPoints));
+            //    AddPlot(
+            //        CreatePlot(newSignal.points, title),
+            //        newSignal);
+            //}
+            //catch (Exception)
+            //{
+            //    MessageBox.Show("Could not operate successfully on these plots. Cleaned up plots.");
+            //}
         }
 
         private List<Types.Point> GenerateSincExtrapolation()

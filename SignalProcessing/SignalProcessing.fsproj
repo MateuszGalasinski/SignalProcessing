@@ -12,7 +12,12 @@
     <Compile Include="StatisticsContinous.fs" />
     <Compile Include="Quantization.fs" />
     <Compile Include="ErrorCalculations.fs" />
+    <Compile Include="Convolution.fs" />
+    <Compile Include="Filters.fs" />
+    <None Include="testFile.fsx" />
   </ItemGroup>
+
+  <ItemGroup />
 
   <ItemGroup>
     <PackageReference Include="MathNet.Numerics" Version="4.7.0" />

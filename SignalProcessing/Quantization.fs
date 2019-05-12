@@ -11,7 +11,7 @@ module Quantization =
             points 
             |> List.fold (fun (miny,maxy) (p) -> 
                 min miny p.y.r, max maxy p.y.r) (Double.MaxValue,Double.MinValue)
-        let domainWidth = (maxy - miny) / (double lvlAmount)
+        let domainWidth = (maxy - miny) / (double (lvlAmount-1))
         let values = 
             [ 
                 for v in miny..domainWidth..maxy do
