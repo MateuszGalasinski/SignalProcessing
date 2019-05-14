@@ -13,24 +13,18 @@ module Filters =
 
     let resolveWindow windowType = 
         match windowType with 
-        | FlatTop -> Window.FlatTop
-        | Hamming -> Window.Hamming
-        | Hanning -> Window.Hann
-        | Blackman -> Window.Blackman
+        | WindowFunction.FlatTop -> Window.FlatTop
+        | WindowFunction.Hamming -> Window.Hamming
+        | WindowFunction.Hanning -> Window.Hann
+        | WindowFunction.Blackman -> Window.Blackman
         | Square -> (fun n -> Array.create n 1.0)
-    
-    let generateBaseFilter M cutoffFrequency samplingFrequency = 
-        let K = cutoffFrequency / samplingFrequency
-        [0..M-1]
-        |> List.map (fun n -> 
-            if (n = (M-1)/2) then
-                2.0 / K
-            else
-                sin ((2.0 * Math.PI * double((n - (M-1) / 2))) / K)
-                / Math.PI * double ((n - (M-1) / 2))
-            )
 
-    let generateFilter windowType M cutoffFrequency samplingFrequency = 
+    type FilterType =
+       | LowPass = 0
+       | BandPass = 1
+       | HighPass = 2
+
+    let generateLowPassFilterFilter windowType M K samplingFrequency = 
         let coefficients = resolveWindow windowType M
         List.ofArray coefficients
         |> List.map2 (fun y1 y2 -> y1 * y2) (generateBaseFilter M cutoffFrequency samplingFrequency)
@@ -50,4 +44,23 @@ module Filters =
                 }
             points = points
         })
-    
+
+    let filterShifter filter shiftFunction = 
+        {
+            filter with points = filter.points
+                    |> List.map2 (fun i p -> Point(p.x, Complex(shiftFunction(i) * p.y.r, p.y.i))) [0.0..1.0..double(filter.points.Length-1)]
+        }
+        
+
+    let makeHighPassFilter (filter:Signal) = 
+        filterShifter filter (fun n -> (-1.0)**n)
+
+    let makeBandPassFilter (filter:Signal) = 
+        filterShifter filter (fun n -> 2.0 * sin(Math.PI * n / 2.0))
+
+    let createFilter filterType windowType M K samplingFrequency =
+        let lowPassFilter = generateLowPassFilterFilter windowType M K samplingFrequency
+        match filterType with 
+        | FilterType.LowPass -> lowPassFilter
+        | FilterType.BandPass -> makeBandPassFilter lowPassFilter
+        | FilterType.HighPass -> makeHighPassFilter lowPassFilter
