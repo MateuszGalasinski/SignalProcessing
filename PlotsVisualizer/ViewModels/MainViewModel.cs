@@ -1,4 +1,11 @@
-﻿using System;
+﻿using Microsoft.FSharp.Collections;
+using Microsoft.Win32;
+using Newtonsoft.Json;
+using OxyPlot;
+using OxyPlot.Wpf;
+using PlotsVisualizer.Views;
+using SignalProcessing;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -6,13 +13,6 @@ using System.IO;
 using System.Linq;
 using System.Media;
 using System.Windows;
-using Microsoft.FSharp.Collections;
-using Microsoft.Win32;
-using Newtonsoft.Json;
-using OxyPlot;
-using OxyPlot.Wpf;
-using PlotsVisualizer.Views;
-using SignalProcessing;
 using UILogic.Base;
 using LineSeries = OxyPlot.Series.LineSeries;
 using Plot = PlotsVisualizer.Models.Plot;
@@ -559,7 +559,7 @@ namespace PlotsVisualizer.ViewModels
 
         private void GenerateFilter()
         {
-            var filter = Filters.generateFilter(Filters.WindowFunction.Hamming, 30, 0, 100);
+            Types.Signal filter = Filters.generateFilter(Filters.WindowFunction.Hamming, 30, 0, 100);
             AddPlot(
                 CreatePlot(filter.points, $"Filter: {Filters.WindowFunction.Hamming} M: {30}"),
                 filter);
