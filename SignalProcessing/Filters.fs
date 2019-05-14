@@ -5,11 +5,11 @@ module Filters =
     open MathNet.Numerics
 
     type WindowFunction =
-       | FlatTop
-       | Hamming
-       | Hanning
-       | Blackman
-       | Square
+       | FlatTop = 0
+       | Hamming = 1
+       | Hanning = 2
+       | Blackman = 3 
+       | Square = 4
 
     let resolveWindow windowType = 
         match windowType with 
@@ -17,18 +17,30 @@ module Filters =
         | WindowFunction.Hamming -> Window.Hamming
         | WindowFunction.Hanning -> Window.Hann
         | WindowFunction.Blackman -> Window.Blackman
-        | Square -> (fun n -> Array.create n 1.0)
+        | WindowFunction.Square -> (fun n -> Array.create n 1.0)
 
     type FilterType =
        | LowPass = 0
        | BandPass = 1
        | HighPass = 2
 
-    let generateLowPassFilterFilter windowType M K samplingFrequency = 
+           
+    let generateBaseFilter M cutoffFrequency samplingFrequency = 
+        let K = samplingFrequency / cutoffFrequency
+        [0..M-1]
+        |> List.map (fun n -> 
+            if (n = (M-1)/2) then
+                2.0 / K
+            else
+                sin ((2.0 * Math.PI * double(n - ((M-1) / 2))) / K)
+                / (Math.PI * double ((n - (M-1) / 2)))
+            )
+
+    let generateLowPassFilterFilter windowType M cutoffFrequency samplingFrequency = 
         let coefficients = resolveWindow windowType M
         List.ofArray coefficients
         |> List.map2 (fun y1 y2 -> y1 * y2) (generateBaseFilter M cutoffFrequency samplingFrequency)
-        |> List.map2 (fun y x -> Point(x, Complex(double(y), 0.0))) [0..coefficients.Length-1]
+        |> List.map2 (fun x y -> Point(x, Complex(double(y), 0.0))) [0.0..double(coefficients.Length-1)]
         |> (fun points -> 
         {
             metadata = 
@@ -58,8 +70,8 @@ module Filters =
     let makeBandPassFilter (filter:Signal) = 
         filterShifter filter (fun n -> 2.0 * sin(Math.PI * n / 2.0))
 
-    let createFilter filterType windowType M K samplingFrequency =
-        let lowPassFilter = generateLowPassFilterFilter windowType M K samplingFrequency
+    let createFilter filterType windowType M cutoffFrequency samplingFrequency =
+        let lowPassFilter = generateLowPassFilterFilter windowType M cutoffFrequency samplingFrequency
         match filterType with 
         | FilterType.LowPass -> lowPassFilter
         | FilterType.BandPass -> makeBandPassFilter lowPassFilter

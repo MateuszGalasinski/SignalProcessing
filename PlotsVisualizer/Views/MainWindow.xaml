@@ -137,10 +137,10 @@
         <CheckBox HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="1" Grid.Column="4"
                   IsChecked="{Binding IsContinous}"></CheckBox>
 
-        <ComboBox Grid.Row="2" Grid.Column="4"
+        <!--<ComboBox Grid.Row="2" Grid.Column="4"
                   FontSize="16" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
                   ItemsSource="{Binding Path=SignalType, Converter={helpers:SignalEnumToCollectionConverter}, Mode=OneTime}"
-                  SelectedValue="{Binding Path=SignalType}" />
+                  SelectedValue="{Binding Path=SignalType}" />-->
 
         <Button Content="Add plot" Command="{Binding AddPlotCommand}" Grid.Row="3" Grid.Column="4" Background="PaleGoldenrod"></Button>
         <!--#endregion-->
@@ -168,6 +168,16 @@
         <TextBox Grid.Row="7" Grid.Column="4" 
                  HorizontalAlignment="Center" VerticalAlignment="Center" MaxHeight="25" MinWidth="80" MaxWidth="80"
                  FontSize="20" Text="{Binding FilterOrder}"></TextBox>
+
+        <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="5" Grid.Column="5">Cut-off frequency</TextBlock>
+        <TextBox Grid.Row="5" Grid.Column="6" 
+                 HorizontalAlignment="Center" VerticalAlignment="Center" MaxHeight="25" MinWidth="80" MaxWidth="80"
+                 FontSize="20" Text="{Binding FilterCutOffFrequency}"></TextBox>
+        <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="6" Grid.Column="5">Sampling frequency</TextBlock>
+        <TextBox Grid.Row="6" Grid.Column="6" 
+                 HorizontalAlignment="Center" VerticalAlignment="Center" MaxHeight="25" MinWidth="80" MaxWidth="80"
+                 FontSize="20" Text="{Binding SamplingFrequency}"></TextBox>
+
         <Button Content="Generate filter" Command="{Binding GenerateFilterCommand}" 
                 Grid.Row="8" Grid.Column="4" ></Button>
 

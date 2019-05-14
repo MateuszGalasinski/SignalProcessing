@@ -14,12 +14,12 @@
     <Compile Include="ErrorCalculations.fs" />
     <Compile Include="Convolution.fs" />
     <Compile Include="Filters.fs" />
+    <Compile Include="FFT.fs" />
     <None Include="testFile.fsx" />
   </ItemGroup>
 
-  <ItemGroup />
-
   <ItemGroup>
+    <PackageReference Include="Extreme.Numerics.FSharp" Version="7.0.0" />
     <PackageReference Include="MathNet.Numerics" Version="4.7.0" />
     <PackageReference Include="MathNet.Numerics.FSharp" Version="4.7.0" />
   </ItemGroup>

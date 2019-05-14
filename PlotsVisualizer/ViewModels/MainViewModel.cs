@@ -21,7 +21,7 @@ namespace PlotsVisualizer.ViewModels
 {
     class MainViewModel : BindableBase
     {
-        private const int stepDivisor = 10000;
+        private const int stepDivisor = 20000;
 
         private Plot _currentPlotModel;
         private int _currentPlotIndex = -1;
@@ -29,10 +29,10 @@ namespace PlotsVisualizer.ViewModels
         private int _plotsCount = 0;
         private double _amplitude = 1;
         private double _startTime = 0;
-        private double _duration = 2;
+        private double _duration = 0.005;
         private double _dutyCycle = 0.5;
-        private double _signalFrequency = 1;
-        private double _samplingFrequency = 10;
+        private double _signalFrequency = 4000;
+        private double _samplingFrequency = 20000;
         private Types.SignalType _signalType = Types.SignalType.Sin;
         private int _firstChosenPlot = 0;
         private int _secondChosenPlot = 1;
@@ -42,9 +42,10 @@ namespace PlotsVisualizer.ViewModels
         private int _quantizationBits = 2;
         private double _extrapolationFrequency = 2000;
         private int _extrapolationNeighboursCount = 4;
-        private int _filterOrder = 5;
+        private int _filterOrder = 20;
         private Filters.FilterType _filterType = Filters.FilterType.LowPass;
         private Filters.WindowFunction _windowFunction = Filters.WindowFunction.Blackman;
+        private double _filterCutOffFrequency = 5000;
 
         private List<Plot> Plots { get; } = new List<Plot>();
 
@@ -165,6 +166,11 @@ namespace PlotsVisualizer.ViewModels
         {
             get => _windowFunction;
             set => SetProperty(ref _windowFunction, value);
+        }
+        public double FilterCutOffFrequency
+        {
+            get => _filterCutOffFrequency;
+            set => SetProperty(ref _filterCutOffFrequency, value);
         }
         #endregion
 
@@ -375,7 +381,7 @@ namespace PlotsVisualizer.ViewModels
         private PlotModel CreatePlot(FSharpList<Types.Point> points, string title)
         {
             var plot = new PlotModel { Title = title };
-            var series = new LineSeries { LineStyle = LineStyle.None, MarkerType = MarkerType.Circle, MarkerSize = 1.5, MarkerFill = OxyColors.SlateGray };
+            var series = new LineSeries { LineStyle = LineStyle.Solid, MarkerType = MarkerType.Circle, MarkerSize = 1.5, MarkerFill = OxyColors.SlateGray };
             int step = (int)Math.Ceiling((double)points.Length / stepDivisor);
             Types.Point point = null;
             for (int i = 0; i < points.Length; i += step)
@@ -578,9 +584,13 @@ namespace PlotsVisualizer.ViewModels
 
         private void GenerateFilter()
         {
-            Types.Signal filter = Filters.generateFilter(Filters.WindowFunction.Hamming, 30, 0, 100);
+            Types.Signal filter = Filters.createFilter(FilterType,
+                WindowFunction,
+                FilterOrder,
+                FilterCutOffFrequency,
+                SamplingFrequency);
             AddPlot(
-                CreatePlot(filter.points, $"Filter: {FilterType} {WindowFunction} M: {30}"),
+                CreatePlot(filter.points, $"Filter: {FilterType} {WindowFunction} M: {FilterOrder}"),
                 filter);
         }
 
@@ -601,10 +611,10 @@ namespace PlotsVisualizer.ViewModels
             var first = Plots[FirstChosenPlot].Signal;
             var second = Plots[SecondChosenPlot].Signal;
 
-            var convoluted = SignalProcessing.Convolution.convolute(first,second);
+            var convoluted = Convolution.convolute(first,second);
 
             AddPlot(
-                CreatePlot(convoluted.points, "test plot"),
+                CreatePlot(convoluted.points, "convoluted plot"),
                 convoluted);
             //var someSignal = SignalGeneration.signalGenerator(new Types.SignalMetadata(SignalType, IsContinous,
             //    Amplitude, StartTime, Duration, DutyCycle, SignalFrequency, SamplingFrequency));
