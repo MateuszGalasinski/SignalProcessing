@@ -124,11 +124,15 @@
     <Compile Include="Models\Plot.cs" />
     <Compile Include="ViewModels\ErrorsViewModel.cs" />
     <Compile Include="ViewModels\HistogramViewModel.cs" />
+    <Compile Include="ViewModels\RadarViewModel.cs" />
     <Compile Include="Views\ErrorWindow.xaml.cs">
       <DependentUpon>ErrorWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\HistogramWindow.xaml.cs">
       <DependentUpon>HistogramWindow.xaml</DependentUpon>
+    </Compile>
+    <Compile Include="Views\RadarWindow.xaml.cs">
+      <DependentUpon>RadarWindow.xaml</DependentUpon>
     </Compile>
     <Compile Include="Views\SignalParametersWindow.xaml.cs">
       <DependentUpon>SignalParametersWindow.xaml</DependentUpon>
@@ -155,6 +159,10 @@
       <DependentUpon>MainWindow.xaml</DependentUpon>
       <SubType>Code</SubType>
     </Compile>
+    <Page Include="Views\RadarWindow.xaml">
+      <SubType>Designer</SubType>
+      <Generator>MSBuild:Compile</Generator>
+    </Page>
     <Page Include="Views\SignalParametersWindow.xaml">
       <SubType>Designer</SubType>
       <Generator>MSBuild:Compile</Generator>

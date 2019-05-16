@@ -29,7 +29,11 @@ module Operations =
     let divide signal1 signal2 =
         {signal1 with 
             points = (processPoints (fun a b -> Complex(a.r / b.r, 0.0)) signal1.points signal2.points)
-            metadata = {signal1.metadata with signalType = SignalType.Composed} }
+            metadata = {
+                signal1.metadata with 
+                    signalType = SignalType.Composed
+                };
+        }
 
     let operate operation signal1 signal2 =
         match operation with 

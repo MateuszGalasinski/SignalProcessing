@@ -137,10 +137,10 @@
         <CheckBox HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="1" Grid.Column="4"
                   IsChecked="{Binding IsContinous}"></CheckBox>
 
-        <!--<ComboBox Grid.Row="2" Grid.Column="4"
+        <ComboBox Grid.Row="2" Grid.Column="4"
                   FontSize="16" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
                   ItemsSource="{Binding Path=SignalType, Converter={helpers:SignalEnumToCollectionConverter}, Mode=OneTime}"
-                  SelectedValue="{Binding Path=SignalType}" />-->
+                  SelectedValue="{Binding Path=SignalType}" />
 
         <Button Content="Add plot" Command="{Binding AddPlotCommand}" Grid.Row="3" Grid.Column="4" Background="PaleGoldenrod"></Button>
         <!--#endregion-->
@@ -245,11 +245,14 @@
                 Grid.Row="9" Grid.Column="9"
                 Background="PaleGoldenrod"></Button>
 
+        <Button Content="Show histogram" Command="{Binding ShowHistogramCommand}"  VerticalAlignment="Bottom"
+                Grid.Row="12" Grid.Column="1"
+                Background="PaleGoldenrod"></Button>
         <Button Content="Show stats" Command="{Binding ShowStatsCommand}" VerticalAlignment="Bottom"
                 Grid.Row="12" Grid.Column="9"
                 Background="PaleGoldenrod"></Button>
-        <Button Content="Show histogram" Command="{Binding ShowHistogramCommand}"  VerticalAlignment="Bottom"
-                Grid.Row="12" Grid.Column="1"
+        <Button Content="Show radar window" Command="{Binding ShowRadarWindowCommand}"  VerticalAlignment="Bottom"
+                Grid.Row="12" Grid.Column="8"
                 Background="PaleGoldenrod"></Button>
         <!--#endregion-->
     </Grid>

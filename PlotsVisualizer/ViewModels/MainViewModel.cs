@@ -29,10 +29,10 @@ namespace PlotsVisualizer.ViewModels
         private int _plotsCount = 0;
         private double _amplitude = 1;
         private double _startTime = 0;
-        private double _duration = 0.005;
+        private double _duration = 0.5;
         private double _dutyCycle = 0.5;
-        private double _signalFrequency = 4000;
-        private double _samplingFrequency = 20000;
+        private double _signalFrequency = 120;
+        private double _samplingFrequency = 2000;
         private Types.SignalType _signalType = Types.SignalType.Sin;
         private int _firstChosenPlot = 0;
         private int _secondChosenPlot = 1;
@@ -48,7 +48,6 @@ namespace PlotsVisualizer.ViewModels
         private double _filterCutOffFrequency = 5000;
 
         private List<Plot> Plots { get; } = new List<Plot>();
-
 
         #region observable props
         public int CurrentPlotIndex
@@ -200,6 +199,8 @@ namespace PlotsVisualizer.ViewModels
 
         public IRaiseCanExecuteCommand ConvoluteCommand { get; }
         public IRaiseCanExecuteCommand GenerateFilterCommand { get; }
+
+        public IRaiseCanExecuteCommand ShowRadarWindowCommand { get; }
         #endregion
 
         public MainViewModel()
@@ -224,6 +225,7 @@ namespace PlotsVisualizer.ViewModels
             ShowErrorsCommand = new RelayCommand(ShowErrors);
             ConvoluteCommand = new RelayCommand(Convolute);
             GenerateFilterCommand = new RelayCommand(GenerateFilter);
+            ShowRadarWindowCommand = new RelayCommand(ShowRadarWindow);
         }
 
         #region plot navigation
@@ -329,10 +331,7 @@ namespace PlotsVisualizer.ViewModels
             if (CurrentPlot?.PlotModel != null)
             {
                 var pngExporter = new PngExporter { Width = 1200, Height = 800, Background = OxyColors.White };
-                string title = CurrentPlot.Signal.metadata == null
-                    ? $"Metadata unavailable"
-                    : $"{CurrentPlot.Signal.metadata.signalType}{(CurrentPlot.Signal.metadata.isContinous ? "Continous" : "Discrete")} f_sig {CurrentPlot.Signal.metadata.signalFrequency:0.##} f_sam {CurrentPlot.Signal.metadata.samplingFrequency:0.##}";
-
+                string title = CurrentPlot.PlotModel.Title.Replace(':', '_').Replace(' ', '_');
                 string filePath = Path.Combine(Directory.GetCurrentDirectory(), "plots");
                 Directory.CreateDirectory(filePath);
                 filePath = Path.Combine(filePath, Path.ChangeExtension(title, "png"));
@@ -549,6 +548,16 @@ namespace PlotsVisualizer.ViewModels
 
             ErrorWindow window = new ErrorWindow(new ErrorsViewModel(first, second, ExtrapolationNeighboursCount, first.metadata.samplingFrequency));
             window.Show();
+        }
+
+
+        private void ShowRadarWindow()
+        {
+            if (CurrentPlot != null)
+            {
+                RadarWindow radarWindow = new RadarWindow(new RadarViewModel(CurrentPlot.Signal));
+                radarWindow.Show();
+            }
         }
         #endregion
 
