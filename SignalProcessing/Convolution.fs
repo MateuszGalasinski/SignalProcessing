@@ -28,6 +28,18 @@ module Convolution =
             points.[i] <- Point(double(i+offset)*step, Complex(conv.[i+offset], 0.0))
         List.ofArray points
 
+    let simpleConvolute (first:List<Point>) (second:List<Point>) = 
+        let newLength = first.Length + second.Length - 1
+        let conv = Array.zeroCreate<double> newLength
+        for i = 0 to newLength - 1 do
+            for j = 0 to first.Length - 1 do
+                conv.[i] <- conv.[i] + first.[j].y.r * (tryTake second (i - j)).r
+
+        let points = Array.zeroCreate<Point> newLength
+        for i = 0 to newLength - 1 do
+            points.[i] <- Point(double(i), Complex(conv.[i], 0.0))
+        List.ofArray points
+
     let convolute (first:Signal) (second:Signal) = 
         let newLength = first.points.Length + second.points.Length - 1
         let conv = Array.zeroCreate<double> newLength

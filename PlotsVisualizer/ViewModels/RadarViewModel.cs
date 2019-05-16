@@ -3,7 +3,6 @@ using OxyPlot;
 using OxyPlot.Series;
 using SignalProcessing;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using UILogic.Base;
 
@@ -24,8 +23,8 @@ namespace PlotsVisualizer.ViewModels
             Title = "Signal plot"
         };
 
-        private const int sampling = 500;
-        private const int duration = 3;
+        private const double sampling = 900;
+        private const double duration = 0.5;
 
         public RadarViewModel(Types.Signal radarSignal)
         {
@@ -37,7 +36,7 @@ namespace PlotsVisualizer.ViewModels
                 startTime: 0,
                 duration: duration,
                 dutyCycle: 0.5,
-                signalFrequency: 23,
+                signalFrequency: 19,
                 samplingFrequency: sampling));
             var lowFreqSig2 = SignalGeneration.signalGenerator(new Types.SignalMetadata(
                 Types.SignalType.Sin,
@@ -67,23 +66,23 @@ namespace PlotsVisualizer.ViewModels
                 signalFrequency: 157,
                 samplingFrequency: sampling));
 
-            RadarSignal = (lowFreqSig
+            RadarSignal = //( lowFreqSig
 
+            Operations.operate(Operations.OperationType.Addition,
+                lowFreqSig4,
+                lowFreqSig
+
+            //Operations.operate(
+            //Operations.OperationType.Addition,
+            //lowFreqSig,
             //Operations.operate(Operations.OperationType.Addition,
             //    lowFreqSig2,
-            //    lowFreqSig
-
-                //Operations.operate(
-                //Operations.OperationType.Addition,
-                //lowFreqSig,
-                //Operations.operate(Operations.OperationType.Addition,
-                //    lowFreqSig2,
-                //    Operations.operate(Operations.OperationType.Addition,
-                //        lowFreqSig3,
-                //        lowFreqSig4))
+            //    Operations.operate(Operations.OperationType.Addition,
+            //        lowFreqSig3,
+            //        lowFreqSig4))
             );
 
-            SignalPlotModel.Series.Add(CreateSeries(RadarSignal.points));
+            SignalPlotModel.Series.Add(CreateSeries(RadarSignal.points, OxyColors.Black));
             SignalPlotModel.InvalidatePlot(true);
 
             SimulateCommand = new RelayCommand(Simulate);
@@ -108,16 +107,12 @@ namespace PlotsVisualizer.ViewModels
         }
 
         public Types.Signal RadarSignal { get; set; }
-        public double SignalVelocity { get; set; } = 3000_000;
-        public double ObjectVelocity { get; set; } = 0;
-        public double StartingDistance { get; set; } = 10;
+        public double SignalVelocity { get; set; } = 3000;
+        public double ObjectVelocity { get; set; } = 30;
+        public double StartingDistance { get; set; } = 100;
 
-        public int BufferSize { get; set; } = 300;
-        public int MinBufferedPoints { get; set; } = 10;
-
-        public double SimulationTime { get; set; } = 2;
-        public double SimulationStep { get; set; } = 0.01;
-        public int UpdatePositionStep { get; set; } = 20;
+        public double SimulationTime { get; set; } = 3;
+        public double SimulationStep { get; set; } = 0.3;
 
         public IRaiseCanExecuteCommand SimulateCommand { get; }
 
@@ -126,50 +121,39 @@ namespace PlotsVisualizer.ViewModels
             var calculatedPositionSeries = new LineSeries { LineStyle = LineStyle.Dot, MarkerType = MarkerType.Circle, MarkerSize = 1.5, MarkerFill = OxyColors.SlateGray };
             var realPositionSeries = new LineSeries { LineStyle = LineStyle.Dash, MarkerType = MarkerType.Triangle, MarkerSize = 1.5, MarkerFill = OxyColors.SlateGray };
 
-            LinkedList<Types.Point> generatedSignalBuffer = new LinkedList<Types.Point>();
-            LinkedList<Types.Point> receivedSignalBuffer = new LinkedList<Types.Point>();
-            List<>
-            int bufferIndex = 0;
-            int updatePositionCounter = 0;
-            double currentTime = 0;
-            double currentDistance = StartingDistance;
-            while (currentTime < SimulationTime)
+            //while (currentTime < SimulationTime)
+            //{
+            //    currentDistance = StartingDistance - (currentTime * ObjectVelocity);
+            //    double signalTravelingTime = 2 * currentDistance / SignalVelocity;
+
+            //    if (updatePositionCounter > UpdatePositionStep)
+            //    {
+            //        var (emitedSignal, receivedSignal) = GenerateSignals(currentTime, signalTravelingTime);
+
+            //        calculatedPositionSeries.Points.Add(new DataPoint(currentTime, CalculateDistance(emitedSignal, receivedSignal)));
+            //        realPositionSeries.Points.Add(new DataPoint(currentTime, currentDistance));
+
+            //        if (updatePositionCounter >= UpdatePositionStep)
+            //        {
+            //            RealPositionPlotModel.Series.Add(CreateSeries(emitedSignal.points, OxyColors.SaddleBrown));
+            //            RealPositionPlotModel.Series.Add(CreateSeries(receivedSignal.points, OxyColors.Red));
+            //        }
+            //        updatePositionCounter = 0;
+            //    }
+            //    else
+            //    {
+            //        updatePositionCounter++;
+            //    }
+            //    currentTime += SimulationStep;
+            //}
+
+            for (double currentTime = 0; currentTime < SimulationTime; currentTime += SimulationStep)
             {
-                // calc current signal value
-                var generatedSignalPoint = CalculateSignalValue(currentTime);
-                generatedSignalBuffer.AddLast(generatedSignalPoint);
+                double currentDistance = StartingDistance - (currentTime * ObjectVelocity);
+                double calculatedDistance = CalculateDistance(currentDistance);
 
-                currentDistance = StartingDistance - (currentTime * ObjectVelocity);
-                double signalTravelingTime = 2 * currentDistance / SignalVelocity;
-                var receivedSignalPoint = CalculateSignalValue(currentTime + signalTravelingTime);
-                receivedSignalBuffer.AddLast(receivedSignalPoint);
-
-                if (bufferIndex >= BufferSize)
-                {
-                    generatedSignalBuffer.RemoveFirst();
-                    receivedSignalBuffer.RemoveFirst();
-                }
-                else
-                {
-                    bufferIndex++;
-                }
-
-                // update position
-                if (bufferIndex > MinBufferedPoints)
-                {
-                    if (updatePositionCounter > UpdatePositionStep)
-                    {
-                        calculatedPositionSeries.Points.Add(new DataPoint(currentTime, CalculateDistance(generatedSignalBuffer, receivedSignalBuffer)));
-                        realPositionSeries.Points.Add(new DataPoint(currentTime, currentDistance));
-                        updatePositionCounter = 0;
-                    }
-                    else
-                    {
-                        updatePositionCounter++;
-                    }
-                }
-
-                currentTime += SimulationStep;
+                calculatedPositionSeries.Points.Add(new DataPoint(currentTime, calculatedDistance));
+                realPositionSeries.Points.Add(new DataPoint(currentTime, currentDistance));
             }
 
             ObjectsPlotModel.Series.Add(calculatedPositionSeries);
@@ -178,40 +162,89 @@ namespace PlotsVisualizer.ViewModels
             RealPositionPlotModel.InvalidatePlot(true);
         }
 
-        /// <summary>
-        /// Assumes signal is generated at least for one full cycle
-        /// </summary>
-        /// <param name="time"></param>
-        /// <returns></returns>
-        private Types.Point CalculateSignalValue(double time)
+        private double CalculateDistance(double currentDistance)
         {
-            //double timeOffset = time - (time / RadarSignal.metadata.signalFrequency);
-            //int sampleNumber = (int)(timeOffset * RadarSignal.metadata.samplingFrequency);
-            int sampleNumber = (int)(time * RadarSignal.metadata.samplingFrequency);
-            return RadarSignal.points[sampleNumber];
-        }
-
-        private double CalculateDistance(LinkedList<Types.Point> original,
-            LinkedList<Types.Point> received)
-        {
-            var tempPoints = original.ToList();
-            tempPoints.Reverse();
-            var correlation = Convolution.convolutePoints(ListModule.OfSeq(tempPoints), ListModule.OfSeq(received));
-            var half = correlation.ToList()
-                .Skip(correlation.Length / 2)
+            int samplesToMove = (int)(currentDistance / SignalVelocity * RadarSignal.metadata.samplingFrequency * 2);
+            int samplesLeft = RadarSignal.points.Length - samplesToMove;
+            var pointsLeft = RadarSignal.points.Take(samplesLeft).ToList();
+            var receivedSignal = RadarSignal.points.Skip(samplesLeft).ToList();
+            receivedSignal.AddRange(pointsLeft);
+            var correlateSignal = Convolution.simpleConvolute(RadarSignal.points, ListModule.OfSeq(receivedSignal)).ToList();
+            var rightHalf = correlateSignal
+                .Skip((correlateSignal.Count - 1) / 2)
                 .Select(p => p.y.r)
                 .ToList();
-            var indexOfMaximum = half
-                .IndexOf(half.Max());
-            return SignalVelocity
-                   * indexOfMaximum
-                   / RadarSignal.metadata.samplingFrequency // TODO :::::::
-                   / 2.0;
+            int maximum = rightHalf.FindIndex(c => c == rightHalf.Max());
+            var calculatedDistance = SignalVelocity * (maximum / RadarSignal.metadata.samplingFrequency) / 2;
+            return calculatedDistance;
         }
 
-        private LineSeries CreateSeries(FSharpList<Types.Point> points)
+        private static (Types.Signal original, Types.Signal received) GenerateSignals(double currentTime, double signalTravelingTime)
         {
-            LineSeries series = new LineSeries { LineStyle = LineStyle.None, MarkerType = MarkerType.Circle, MarkerSize = 1.5, MarkerFill = OxyColors.SlateGray };
+
+           
+            var emitedSignal = Operations.operate(Operations.OperationType.Addition,
+                SignalGeneration.signalGenerator(new Types.SignalMetadata(
+                    Types.SignalType.Sin,
+                    false,
+                    amplitude: 1,
+                    startTime: currentTime,
+                    duration: duration,
+                    dutyCycle: 0.5,
+                    signalFrequency: 23,
+                    samplingFrequency: sampling)),
+                SignalGeneration.signalGenerator(new Types.SignalMetadata(
+                    Types.SignalType.Sin,
+                    false,
+                    amplitude: 1,
+                    startTime: currentTime,
+                    duration: duration,
+                    dutyCycle: 0.5,
+                    signalFrequency: 71,
+                    samplingFrequency: sampling)));
+
+            var receivedSignal = Operations.operate(Operations.OperationType.Addition,
+                SignalGeneration.signalGenerator(new Types.SignalMetadata(
+                    Types.SignalType.Sin,
+                    false,
+                    amplitude: 1,
+                    startTime: currentTime + signalTravelingTime,
+                    duration: duration,
+                    dutyCycle: 0.5,
+                    signalFrequency: 23,
+                    samplingFrequency: sampling)),
+                SignalGeneration.signalGenerator(new Types.SignalMetadata(
+                    Types.SignalType.Sin,
+                    false,
+                    amplitude: 1,
+                    startTime: currentTime + signalTravelingTime,
+                    duration: duration,
+                    dutyCycle: 0.5,
+                    signalFrequency: 71,
+                    samplingFrequency: sampling)));
+            return (emitedSignal, receivedSignal);
+        }
+
+        //private double CalculateDistance(Types.Signal original,
+        //    Types.Signal received)
+        //{
+        //    var tempPoints = original.points.ToList();
+        //    tempPoints.Reverse();
+        //    var correlation = Convolution.convolutePoints(ListModule.OfSeq(tempPoints), ListModule.OfSeq(received.points));
+        //    var half = correlation.ToList()
+        //        .Skip(correlation.Length / 2)
+        //        .Select(p => p.y.r)
+        //        .ToList();
+        //    var indexOfMaximum = half
+        //        .IndexOf(half.Max());
+        //    return SignalVelocity * (
+        //               indexOfMaximum / RadarSignal.metadata.samplingFrequency
+        //            ) / 2.0;
+        //}
+
+        private LineSeries CreateSeries(FSharpList<Types.Point> points, OxyColor color, string title = "default")
+        {
+            LineSeries series = new LineSeries { LineStyle = LineStyle.Solid, MarkerType = MarkerType.Circle, MarkerSize = 1.5, MarkerFill = color, Title = title };
             int step = (int)Math.Ceiling((double)points.Length / 20000);
             for (int i = 0; i < points.Length; i += step)
             {
