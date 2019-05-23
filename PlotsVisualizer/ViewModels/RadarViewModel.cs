@@ -118,7 +118,6 @@ namespace PlotsVisualizer.ViewModels
             var calculatedPositionSeries = new LineSeries { LineStyle = LineStyle.None, MarkerType = MarkerType.Circle, MarkerSize = 3, MarkerFill = OxyColors.SlateGray };
             ConcurrentBag<DataPoint> distancePoints = new ConcurrentBag<DataPoint>();
             ConcurrentBag<(PlotModel plot, double distance)> correlationPlots = new ConcurrentBag<(PlotModel plot, double distance)>();
-            //var realPositionSeries = new LineSeries { LineStyle = LineStyle.Dash, MarkerType = MarkerType.Triangle, MarkerSize = 1.5, MarkerFill = OxyColors.SlateGray };
             Enumerable.Range(0, (int)(SimulationTime / SimulationStep))
                 .AsParallel()
                 .ForAll(stepIndex =>
