@@ -553,11 +553,8 @@ namespace PlotsVisualizer.ViewModels
 
         private void ShowRadarWindow()
         {
-            if (CurrentPlot != null)
-            {
-                RadarWindow radarWindow = new RadarWindow(new RadarViewModel(CurrentPlot.Signal));
-                radarWindow.Show();
-            }
+            RadarWindow radarWindow = new RadarWindow(new RadarViewModel());
+            radarWindow.Show();
         }
         #endregion
 

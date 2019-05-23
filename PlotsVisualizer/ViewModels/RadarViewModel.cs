@@ -3,7 +3,10 @@ using OxyPlot;
 using OxyPlot.Series;
 using SignalProcessing;
 using System;
+using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
+using System.Media;
 using UILogic.Base;
 
 namespace PlotsVisualizer.ViewModels
@@ -14,9 +17,11 @@ namespace PlotsVisualizer.ViewModels
         {
             Title = "Calculated positions"
         };
-        private PlotModel _realPositionPlotModel = new PlotModel()
+        private List<PlotModel> _correlationPlots = new List<PlotModel>();
+        private int _currentCorrelationIndex = -1;
+        private PlotModel _correlationPlotModel = new PlotModel()
         {
-            Title = "Real positions"
+            Title = "Correlation"
         };
         private PlotModel _signalPlotModel = new PlotModel()
         {
@@ -26,9 +31,8 @@ namespace PlotsVisualizer.ViewModels
         private const double sampling = 900;
         private const double duration = 0.5;
 
-        public RadarViewModel(Types.Signal radarSignal)
+        public RadarViewModel()
         {
-            //RadarSignal = radarSignal ?? throw new ArgumentNullException(nameof(radarSignal));
             var lowFreqSig = SignalGeneration.signalGenerator(new Types.SignalMetadata(
                 Types.SignalType.Sin,
                 false,
@@ -66,26 +70,17 @@ namespace PlotsVisualizer.ViewModels
                 signalFrequency: 157,
                 samplingFrequency: sampling));
 
-            RadarSignal = //( lowFreqSig
-
-            Operations.operate(Operations.OperationType.Addition,
+            RadarSignal = Operations.operate(Operations.OperationType.Addition,
                 lowFreqSig4,
                 lowFreqSig
-
-            //Operations.operate(
-            //Operations.OperationType.Addition,
-            //lowFreqSig,
-            //Operations.operate(Operations.OperationType.Addition,
-            //    lowFreqSig2,
-            //    Operations.operate(Operations.OperationType.Addition,
-            //        lowFreqSig3,
-            //        lowFreqSig4))
             );
 
             SignalPlotModel.Series.Add(CreateSeries(RadarSignal.points, OxyColors.Black));
             SignalPlotModel.InvalidatePlot(true);
 
             SimulateCommand = new RelayCommand(Simulate);
+            NextPlotCommand = new RelayCommand(MoveToNextPlot);
+            PreviousPlotCommand = new RelayCommand(MoveToPreviousPlot);
         }
 
         public PlotModel ObjectsPlotModel
@@ -94,10 +89,10 @@ namespace PlotsVisualizer.ViewModels
             set => SetProperty(ref _objectsPlotModel, value);
         }
 
-        public PlotModel RealPositionPlotModel
+        public PlotModel CorrelationPlotModel
         {
-            get => _realPositionPlotModel;
-            set => SetProperty(ref _realPositionPlotModel, value);
+            get => _correlationPlotModel;
+            set => SetProperty(ref _correlationPlotModel, value);
         }
 
         public PlotModel SignalPlotModel
@@ -115,132 +110,61 @@ namespace PlotsVisualizer.ViewModels
         public double SimulationStep { get; set; } = 0.3;
 
         public IRaiseCanExecuteCommand SimulateCommand { get; }
+        public IRaiseCanExecuteCommand NextPlotCommand { get; }
+        public IRaiseCanExecuteCommand PreviousPlotCommand { get; }
 
         public void Simulate()
         {
-            var calculatedPositionSeries = new LineSeries { LineStyle = LineStyle.Dot, MarkerType = MarkerType.Circle, MarkerSize = 1.5, MarkerFill = OxyColors.SlateGray };
-            var realPositionSeries = new LineSeries { LineStyle = LineStyle.Dash, MarkerType = MarkerType.Triangle, MarkerSize = 1.5, MarkerFill = OxyColors.SlateGray };
+            var calculatedPositionSeries = new LineSeries { LineStyle = LineStyle.None, MarkerType = MarkerType.Circle, MarkerSize = 3, MarkerFill = OxyColors.SlateGray };
+            ConcurrentBag<DataPoint> distancePoints = new ConcurrentBag<DataPoint>();
+            ConcurrentBag<(PlotModel plot, double distance)> correlationPlots = new ConcurrentBag<(PlotModel plot, double distance)>();
+            //var realPositionSeries = new LineSeries { LineStyle = LineStyle.Dash, MarkerType = MarkerType.Triangle, MarkerSize = 1.5, MarkerFill = OxyColors.SlateGray };
+            Enumerable.Range(0, (int)(SimulationTime / SimulationStep))
+                .AsParallel()
+                .ForAll(stepIndex =>
+                {
+                    double currentTime = (stepIndex * SimulationStep);
+                    double currentDistance = StartingDistance - (currentTime * ObjectVelocity);
+                    double calculatedDistance = CalculateDistance(currentDistance, correlationPlots);
 
-            //while (currentTime < SimulationTime)
-            //{
-            //    currentDistance = StartingDistance - (currentTime * ObjectVelocity);
-            //    double signalTravelingTime = 2 * currentDistance / SignalVelocity;
-
-            //    if (updatePositionCounter > UpdatePositionStep)
-            //    {
-            //        var (emitedSignal, receivedSignal) = GenerateSignals(currentTime, signalTravelingTime);
-
-            //        calculatedPositionSeries.Points.Add(new DataPoint(currentTime, CalculateDistance(emitedSignal, receivedSignal)));
-            //        realPositionSeries.Points.Add(new DataPoint(currentTime, currentDistance));
-
-            //        if (updatePositionCounter >= UpdatePositionStep)
-            //        {
-            //            RealPositionPlotModel.Series.Add(CreateSeries(emitedSignal.points, OxyColors.SaddleBrown));
-            //            RealPositionPlotModel.Series.Add(CreateSeries(receivedSignal.points, OxyColors.Red));
-            //        }
-            //        updatePositionCounter = 0;
-            //    }
-            //    else
-            //    {
-            //        updatePositionCounter++;
-            //    }
-            //    currentTime += SimulationStep;
-            //}
-
-            for (double currentTime = 0; currentTime < SimulationTime; currentTime += SimulationStep)
-            {
-                double currentDistance = StartingDistance - (currentTime * ObjectVelocity);
-                double calculatedDistance = CalculateDistance(currentDistance);
-
-                calculatedPositionSeries.Points.Add(new DataPoint(currentTime, calculatedDistance));
-                realPositionSeries.Points.Add(new DataPoint(currentTime, currentDistance));
-            }
-
+                    distancePoints.Add(new DataPoint(currentTime, calculatedDistance));
+                });
+            var sortedPoints = distancePoints.ToList();
+            sortedPoints.Sort((p, n) => p.X.CompareTo(n.X));
+            calculatedPositionSeries.Points.AddRange(distancePoints);
             ObjectsPlotModel.Series.Add(calculatedPositionSeries);
             ObjectsPlotModel.InvalidatePlot(true);
-            RealPositionPlotModel.Series.Add(realPositionSeries);
-            RealPositionPlotModel.InvalidatePlot(true);
+
+            var sortedCorrelation = correlationPlots.ToList();;
+            sortedCorrelation.Sort((p, n) => -p.distance.CompareTo(n.distance));
+            _correlationPlots = sortedCorrelation.Select(p => p.plot).ToList();
+            CorrelationPlotModel = _correlationPlots.First();
+            _currentCorrelationIndex = 0;
+            CorrelationPlotModel.InvalidatePlot(true);
         }
 
-        private double CalculateDistance(double currentDistance)
+        private double CalculateDistance(double currentDistance, ConcurrentBag<(PlotModel, double)> correlationPlot)
         {
             int samplesToMove = (int)(currentDistance / SignalVelocity * RadarSignal.metadata.samplingFrequency * 2);
             int samplesLeft = RadarSignal.points.Length - samplesToMove;
             var pointsLeft = RadarSignal.points.Take(samplesLeft).ToList();
             var receivedSignal = RadarSignal.points.Skip(samplesLeft).ToList();
             receivedSignal.AddRange(pointsLeft);
-            var correlateSignal = Convolution.simpleConvolute(RadarSignal.points, ListModule.OfSeq(receivedSignal)).ToList();
-            var rightHalf = correlateSignal
-                .Skip((correlateSignal.Count - 1) / 2)
+            var correlationSignal = Convolution.simpleConvolute(RadarSignal.points, ListModule.OfSeq(receivedSignal));
+            correlationPlot.Add((new PlotModel()
+            {
+                Series = { CreateSeries(correlationSignal, OxyColors.DarkBlue, $"Correlation, distance: {currentDistance}") }
+            }, currentDistance));
+
+            var correlationSignalList = correlationSignal.ToList();
+            var rightHalf = correlationSignalList
+                .Skip((correlationSignalList.Count - 1) / 2)
                 .Select(p => p.y.r)
                 .ToList();
             int maximum = rightHalf.FindIndex(c => c == rightHalf.Max());
             var calculatedDistance = SignalVelocity * (maximum / RadarSignal.metadata.samplingFrequency) / 2;
             return calculatedDistance;
         }
-
-        private static (Types.Signal original, Types.Signal received) GenerateSignals(double currentTime, double signalTravelingTime)
-        {
-
-           
-            var emitedSignal = Operations.operate(Operations.OperationType.Addition,
-                SignalGeneration.signalGenerator(new Types.SignalMetadata(
-                    Types.SignalType.Sin,
-                    false,
-                    amplitude: 1,
-                    startTime: currentTime,
-                    duration: duration,
-                    dutyCycle: 0.5,
-                    signalFrequency: 23,
-                    samplingFrequency: sampling)),
-                SignalGeneration.signalGenerator(new Types.SignalMetadata(
-                    Types.SignalType.Sin,
-                    false,
-                    amplitude: 1,
-                    startTime: currentTime,
-                    duration: duration,
-                    dutyCycle: 0.5,
-                    signalFrequency: 71,
-                    samplingFrequency: sampling)));
-
-            var receivedSignal = Operations.operate(Operations.OperationType.Addition,
-                SignalGeneration.signalGenerator(new Types.SignalMetadata(
-                    Types.SignalType.Sin,
-                    false,
-                    amplitude: 1,
-                    startTime: currentTime + signalTravelingTime,
-                    duration: duration,
-                    dutyCycle: 0.5,
-                    signalFrequency: 23,
-                    samplingFrequency: sampling)),
-                SignalGeneration.signalGenerator(new Types.SignalMetadata(
-                    Types.SignalType.Sin,
-                    false,
-                    amplitude: 1,
-                    startTime: currentTime + signalTravelingTime,
-                    duration: duration,
-                    dutyCycle: 0.5,
-                    signalFrequency: 71,
-                    samplingFrequency: sampling)));
-            return (emitedSignal, receivedSignal);
-        }
-
-        //private double CalculateDistance(Types.Signal original,
-        //    Types.Signal received)
-        //{
-        //    var tempPoints = original.points.ToList();
-        //    tempPoints.Reverse();
-        //    var correlation = Convolution.convolutePoints(ListModule.OfSeq(tempPoints), ListModule.OfSeq(received.points));
-        //    var half = correlation.ToList()
-        //        .Skip(correlation.Length / 2)
-        //        .Select(p => p.y.r)
-        //        .ToList();
-        //    var indexOfMaximum = half
-        //        .IndexOf(half.Max());
-        //    return SignalVelocity * (
-        //               indexOfMaximum / RadarSignal.metadata.samplingFrequency
-        //            ) / 2.0;
-        //}
 
         private LineSeries CreateSeries(FSharpList<Types.Point> points, OxyColor color, string title = "default")
         {
@@ -253,6 +177,32 @@ namespace PlotsVisualizer.ViewModels
             }
 
             return series;
+        }
+
+        private void MoveToNextPlot()
+        {
+            if (_currentCorrelationIndex + 1 < _correlationPlots.Count)
+            {
+                _currentCorrelationIndex++;
+                CorrelationPlotModel = _correlationPlots[_currentCorrelationIndex];
+            }
+            else
+            {
+                SystemSounds.Beep.Play();
+            }
+        }
+
+        private void MoveToPreviousPlot()
+        {
+            if (_currentCorrelationIndex > 0)
+            {
+                _currentCorrelationIndex--;
+                CorrelationPlotModel = _correlationPlots[_currentCorrelationIndex];
+            }
+            else
+            {
+                SystemSounds.Beep.Play();
+            }
         }
     }
 }

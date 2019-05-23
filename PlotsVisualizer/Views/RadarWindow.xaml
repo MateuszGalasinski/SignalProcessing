@@ -73,7 +73,19 @@
         <oxy:PlotView Grid.Row="3" Grid.Column="1" Grid.RowSpan="1" Grid.ColumnSpan="3"
                       Model="{Binding ObjectsPlotModel}" Margin="10,20,10,20" />
         <oxy:PlotView Grid.Row="4" Grid.Column="1" Grid.RowSpan="1" Grid.ColumnSpan="3"
-                      Model="{Binding RealPositionPlotModel}" Margin="10,20,10,20" />
+                      Model="{Binding CorrelationPlotModel}" Margin="10,20,10,20" />
+        <Button Grid.Row="4" Grid.Column="3" 
+                FontSize="16" VerticalContentAlignment="Bottom" HorizontalContentAlignment="Center"
+                VerticalAlignment="Top" HorizontalAlignment="Right"
+                MaxHeight="20" MaxWidth="120"
+                Content="Next" Command="{Binding NextPlotCommand}">
+        </Button>
+        <Button Grid.Row="4" Grid.Column="1" 
+                FontSize="16" VerticalContentAlignment="Bottom" HorizontalContentAlignment="Center"
+                VerticalAlignment="Top" HorizontalAlignment="Left"
+                MaxHeight="20" MaxWidth="120"
+                Content="Previous" Command="{Binding PreviousPlotCommand}">
+        </Button>
         <oxy:PlotView Grid.Row="5" Grid.Column="1" Grid.RowSpan="1" Grid.ColumnSpan="3"
                       Model="{Binding SignalPlotModel}" Margin="10,20,10,20" />
     </Grid>
