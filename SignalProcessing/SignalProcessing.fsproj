@@ -8,14 +8,9 @@
     <Compile Include="Types.fs" />
     <Compile Include="SignalGeneration.fs" />
     <Compile Include="Operations.fs" />
-    <Compile Include="StatisticsDiscrete.fs" />
-    <Compile Include="StatisticsContinous.fs" />
-    <Compile Include="Quantization.fs" />
-    <Compile Include="ErrorCalculations.fs" />
     <Compile Include="Convolution.fs" />
     <Compile Include="Filters.fs" />
     <Compile Include="FFT.fs" />
-    <None Include="testFile.fsx" />
   </ItemGroup>
 
   <ItemGroup>

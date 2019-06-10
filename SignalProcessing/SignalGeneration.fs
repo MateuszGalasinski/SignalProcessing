@@ -3,6 +3,8 @@ namespace SignalProcessing
 open System
 
 module SignalGeneration = 
+    open MathNet.Numerics
+
     let genSignal (metadata : SignalMetadata) (points : List<Point>) = 
         {
             points = points
@@ -24,7 +26,7 @@ module SignalGeneration =
         fun values -> values |> List.map calculator
 
     let pointFromXFactory ySource =
-        fun v -> Point(v, Complex(ySource(v), 0.0)) 
+        fun v -> Point(v, new complex(ySource(v), 0.0)) 
 
     let randomNoiseSource meta = 
         let random = System.Random()

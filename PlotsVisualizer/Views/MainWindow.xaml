@@ -8,9 +8,17 @@
         xmlns:viewModels="clr-namespace:PlotsVisualizer.ViewModels"
         xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
         xmlns:helpers="clr-namespace:PlotsVisualizer.Helpers"
+        xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
+        xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
         mc:Ignorable="d"
         Title="MainWindow" Height="800" Width="1400"
-        Background="SlateGray">
+        TextElement.Foreground="{DynamicResource MaterialDesignBody}"
+        TextElement.FontWeight="Regular"
+        TextElement.FontSize="13"
+        TextOptions.TextFormattingMode="Ideal" 
+        TextOptions.TextRenderingMode="Auto"        
+        Background="{DynamicResource MaterialDesignPaper}"
+        FontFamily="{DynamicResource MaterialDesignFont}">
 
     <Window.Resources>
         <Style TargetType="{x:Type Button}">
@@ -84,8 +92,7 @@
         </Grid.ColumnDefinitions>
         <!--#region Read save -->
 
-        <Rectangle Grid.Row="0" Grid.RowSpan="4" Grid.Column="8" Grid.ColumnSpan="2"
-                   Fill="Gainsboro"/>
+        <!--<Rectangle Grid.Row="0" Grid.RowSpan="4" Grid.Column="8" Grid.ColumnSpan="2" Fill="Gainsboro"/>-->
         <TextBlock Text="Save/Read file name: " FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="0" Grid.Column="8" Grid.ColumnSpan="2"></TextBlock>
         <TextBox Text="{Binding FileName, Mode=OneWay}" FontSize="16" MinWidth="200" MaxWidth="200"
                  HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="1" Grid.Column="8" Grid.ColumnSpan="2"
@@ -96,16 +103,16 @@
                 </i:EventTrigger>
             </i:Interaction.Triggers>
         </TextBox>
-        <Button Content="Save to file" Background="PaleGoldenrod" Command="{Binding SavePlotCommand}" Grid.Row="2" Grid.Column="9" ></Button>
-        <Button Content="Load from file" Background="PaleGoldenrod" Command="{Binding LoadPlotCommand}" Grid.Row="2" Grid.Column="8" ></Button>
+        <Button Content="Save to file" Command="{Binding SavePlotCommand}" Grid.Row="2" Grid.Column="9" ></Button>
+        <Button Content="Load from file" Command="{Binding LoadPlotCommand}" Grid.Row="2" Grid.Column="8" ></Button>
 
-        <Button Content="Save plot to image" Background="PaleGoldenrod" Command="{Binding SavePlotImageCommand}" 
+        <Button Content="Save plot to image"  Command="{Binding SavePlotImageCommand}" 
                 Grid.Row="3" Grid.Column="8" Grid.ColumnSpan="2" ></Button>
 
         <!--#endregion -->
 
         <!--#region New signal -->
-        <Rectangle Fill="Gainsboro" Grid.Row="0" Margin="20,0,0,0" Grid.RowSpan="4" Grid.Column="0" Grid.ColumnSpan="5"/>
+        <!--<Rectangle Fill="{DynamicResource SecondaryAccentForegroundBrush}" Grid.Row="0" Margin="20,0,0,0" Grid.RowSpan="4" Grid.Column="0" Grid.ColumnSpan="5"/>-->
 
         <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="1">StartTime</TextBlock>
         <TextBox FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="80" MaxWidth="80" Grid.Row="1" Grid.Column="1"
@@ -142,7 +149,7 @@
                   ItemsSource="{Binding Path=SignalType, Converter={helpers:SignalEnumToCollectionConverter}, Mode=OneTime}"
                   SelectedValue="{Binding Path=SignalType}" />
 
-        <Button Content="Add plot" Command="{Binding AddPlotCommand}" Grid.Row="3" Grid.Column="4" Background="PaleGoldenrod"></Button>
+        <Button Content="Add plot" Command="{Binding AddPlotCommand}" Grid.Row="3" Grid.Column="4"></Button>
         <!--#endregion-->
         <TextBlock FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2">Choose signals to operate on</TextBlock>
         <TextBox Grid.Row="5" Grid.Column="1" 
@@ -154,7 +161,9 @@
         <Button Content="Convolution" Command="{Binding ConvoluteCommand}" 
                 Grid.Row="8" Grid.Column="1" Grid.ColumnSpan="2"></Button>
 
-        <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="5" Grid.Column="3">Filter type</TextBlock>
+
+        <!--#region FILTERS -->
+        <!--<TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="5" Grid.Column="3">Filter type</TextBlock>
         <ComboBox Grid.Row="5" Grid.Column="4"
                   FontSize="16" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="10,5,10,5"
                   ItemsSource="{Binding Path=FilterType, Converter={helpers:EnumToCollectionConverter}, Mode=OneTime}"
@@ -179,8 +188,8 @@
                  FontSize="20" Text="{Binding SamplingFrequency}"></TextBox>
 
         <Button Content="Generate filter" Command="{Binding GenerateFilterCommand}" 
-                Grid.Row="8" Grid.Column="4" ></Button>
-
+                Grid.Row="8" Grid.Column="4" ></Button>-->
+        <!--#endregion-->
 
         <Button Content="+" Command="{Binding AddCommand}" FontWeight="UltraBold"
                 VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Grid.Row="6" Grid.Column="1" ></Button>
@@ -191,43 +200,12 @@
         <Button Content="/" Command="{Binding DivideCommand}" FontWeight="UltraBold"
                 VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Grid.Row="7" Grid.Column="2" ></Button>
 
-        <Rectangle Fill="WhiteSmoke" Grid.Row="0" Grid.RowSpan="4" Grid.Column="5" Grid.ColumnSpan="3"/>
-
-        <TextBlock FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="0" Grid.Column="5">Bits number</TextBlock>
-        <TextBox FontSize="20" MaxHeight="25" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="80" MaxWidth="80" Grid.Row="0" Grid.Column="6"
-                 Text="{Binding QuantizationBits}"></TextBox>
-
-        <Button Content="Quantize" Command="{Binding QuantizeCommand}" FontSize="16" Margin="5"
-                VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Grid.Row="0" Grid.Column="7" ></Button>
-
-        <TextBlock FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="1" Grid.Column="5">New frequency</TextBlock>
-        <TextBox FontSize="20" MaxHeight="25" HorizontalAlignment="Center" VerticalAlignment="Center"  MinWidth="80" MaxWidth="80" 
-                 Grid.Row="1" Grid.Column="6"
-                 Text="{Binding ExtrapolationFrequency}"></TextBox>
-
-        <TextBlock FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="2" Grid.Column="5">Neighbours count</TextBlock>
-        <TextBox FontSize="20" MaxHeight="25" HorizontalAlignment="Center" VerticalAlignment="Center"  MinWidth="80" MaxWidth="80" 
-                 Grid.Row="2" Grid.Column="6"
-                 Text="{Binding ExtrapolationNeighboursCount}"></TextBox>
-        <Button Content="Extrapolate 0" Command="{Binding ExtrapolateZeroCommand}"
-                VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Grid.Row="1" Grid.Column="7" ></Button>
-
-        <Button Content="Extrapolate sinc" Command="{Binding ExtrapolateSincCommand}"
-                VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Grid.Row="2" Grid.Column="7" ></Button>
-
-        <Button Content="Calculate error" Command="{Binding ShowErrorsCommand}"
-                VerticalContentAlignment="Top" HorizontalContentAlignment="Center" Grid.Row="3" Grid.Column="7" ></Button>
-        <TextBox FontSize="20" MaxHeight="25" HorizontalAlignment="Center" VerticalAlignment="Center"  MinWidth="80" MaxWidth="80" Grid.Row="3" Grid.Column="5"
-                 Text="{Binding FirstToCompare}"></TextBox>
-        <TextBox FontSize="20" MaxHeight="25" HorizontalAlignment="Center" VerticalAlignment="Center"  MinWidth="80" MaxWidth="80" Grid.Row="3" Grid.Column="6"
-                 Text="{Binding SecondToCompare}"></TextBox>
-
-
-        <oxy:PlotView Grid.Row="8" Grid.RowSpan="6" Grid.ColumnSpan="12" Model="{Binding CurrentPlot.PlotModel}" Margin="20,30,20,30" />
-
+        <!--<oxy:PlotView Background="{DynamicResource MaterialDesignBody}" Grid.Row="8" Grid.RowSpan="6" Grid.ColumnSpan="12" Model="{Binding CurrentPlot.PlotModel}" Margin="20,30,20,30" />-->
+        <lvc:CartesianChart Grid.Row="8" Grid.RowSpan="6" Grid.ColumnSpan="12" Margin="20,30,20,30" 
+            Series="{Binding SeriesCollection}" />
         <!--#region plots navigation -->
-        <TextBlock FontSize="20" HorizontalAlignment="Center"  VerticalAlignment="Center" Margin="0, 0, 0, 5"
-                   Grid.Row="8" Grid.Column="1" Grid.RowSpan="2" Grid.ColumnSpan="2">
+        <TextBlock FontSize="20" HorizontalAlignment="Center"  VerticalAlignment="Bottom" Margin="0, 0, 0, 5"
+                   Grid.Row="9" Grid.Column="3" Foreground="{DynamicResource MaterialDesignLightForeground}">
             <TextBlock.Text>
                 <MultiBinding StringFormat="{}{0}/{1}">
                     <Binding Path="CurrentPlotIndex" />
@@ -236,24 +214,11 @@
             </TextBlock.Text>
         </TextBlock>
         <Button Content="&lt;--------" Command="{Binding PreviousPlotCommand}" VerticalAlignment="Bottom" 
-                Grid.Row="9" Grid.Column="1"
-                Background="PaleGoldenrod"></Button>
+                Grid.Row="9" Grid.Column="1"></Button>
         <Button Content="--------&gt;" Command="{Binding NextPlotCommand}" VerticalAlignment="Bottom" 
-                Grid.Row="9" Grid.Column="2" 
-                Background="PaleGoldenrod"></Button>
+                Grid.Row="9" Grid.Column="2"></Button>
         <Button Content="Delete" Command="{Binding DeleteCommand}" VerticalAlignment="Top"
-                Grid.Row="9" Grid.Column="9"
-                Background="PaleGoldenrod"></Button>
-
-        <Button Content="Show histogram" Command="{Binding ShowHistogramCommand}"  VerticalAlignment="Bottom"
-                Grid.Row="12" Grid.Column="1"
-                Background="PaleGoldenrod"></Button>
-        <Button Content="Show stats" Command="{Binding ShowStatsCommand}" VerticalAlignment="Bottom"
-                Grid.Row="12" Grid.Column="9"
-                Background="PaleGoldenrod"></Button>
-        <Button Content="Show radar window" Command="{Binding ShowRadarWindowCommand}"  VerticalAlignment="Bottom"
-                Grid.Row="12" Grid.Column="8"
-                Background="PaleGoldenrod"></Button>
+                Grid.Row="9" Grid.Column="9"></Button>
         <!--#endregion-->
     </Grid>
 </Window>

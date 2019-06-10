@@ -1,16 +1,14 @@
-﻿using Microsoft.FSharp.Collections;
+﻿using LiveCharts;
+using Microsoft.FSharp.Collections;
 using Microsoft.Win32;
 using Newtonsoft.Json;
 using OxyPlot;
 using OxyPlot.Wpf;
-using PlotsVisualizer.Views;
 using SignalProcessing;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
-using System.Linq;
 using System.Media;
 using System.Windows;
 using UILogic.Base;
@@ -36,16 +34,12 @@ namespace PlotsVisualizer.ViewModels
         private Types.SignalType _signalType = Types.SignalType.Sin;
         private int _firstChosenPlot = 0;
         private int _secondChosenPlot = 1;
-        private int _firstToCompare = 0;
-        private int _secondToCompare = 1;
         private bool _isContinous;
-        private int _quantizationBits = 2;
-        private double _extrapolationFrequency = 2000;
-        private int _extrapolationNeighboursCount = 4;
         private int _filterOrder = 20;
-        private Filters.FilterType _filterType = Filters.FilterType.LowPass;
-        private Filters.WindowFunction _windowFunction = Filters.WindowFunction.Blackman;
+        //private Filters.FilterType _filterType = Filters.FilterType.LowPass;
+        //private Filters.WindowFunction _windowFunction = Filters.WindowFunction.Blackman;
         private double _filterCutOffFrequency = 5000;
+        private SeriesCollection _seriesCollection;
 
         private List<Plot> Plots { get; } = new List<Plot>();
 
@@ -60,6 +54,13 @@ namespace PlotsVisualizer.ViewModels
             get => _currentPlotModel;
             private set => SetProperty(ref _currentPlotModel, value);
         }
+
+        public SeriesCollection SeriesCollection
+        {
+            get => _seriesCollection;
+            private set => SetProperty(ref _seriesCollection, value);
+        }
+
         public int PlotsCount
         {
             get => _plotsCount;
@@ -119,36 +120,11 @@ namespace PlotsVisualizer.ViewModels
             get => _secondChosenPlot;
             set => SetProperty(ref _secondChosenPlot, value);
         }
-        public int FirstToCompare
-        {
-            get => _firstToCompare;
-            set => SetProperty(ref _firstToCompare, value);
-        }
-        public int SecondToCompare
-        {
-            get => _secondToCompare;
-            set => SetProperty(ref _secondToCompare, value);
-        }
-        public int ExtrapolationNeighboursCount
-        {
-            get => _extrapolationNeighboursCount;
-            set => SetProperty(ref _extrapolationNeighboursCount, value);
-        }
 
         public bool IsContinous
         {
             get => _isContinous;
             set => SetProperty(ref _isContinous, value);
-        }
-        public int QuantizationBits
-        {
-            get => _quantizationBits;
-            set => SetProperty(ref _quantizationBits, value);
-        }
-        public double ExtrapolationFrequency
-        {
-            get => _extrapolationFrequency;
-            set => SetProperty(ref _extrapolationFrequency, value);
         }
 
         public int FilterOrder
@@ -156,16 +132,16 @@ namespace PlotsVisualizer.ViewModels
             get => _filterOrder;
             set => SetProperty(ref _filterOrder, value);
         }
-        public Filters.FilterType FilterType
-        {
-            get => _filterType;
-            set => SetProperty(ref _filterType, value);
-        }
-        public Filters.WindowFunction WindowFunction
-        {
-            get => _windowFunction;
-            set => SetProperty(ref _windowFunction, value);
-        }
+        //public Filters.FilterType FilterType
+        //{
+        //    get => _filterType;
+        //    set => SetProperty(ref _filterType, value);
+        //}
+        //public Filters.WindowFunction WindowFunction
+        //{
+        //    get => _windowFunction;
+        //    set => SetProperty(ref _windowFunction, value);
+        //}
         public double FilterCutOffFrequency
         {
             get => _filterCutOffFrequency;
@@ -216,16 +192,20 @@ namespace PlotsVisualizer.ViewModels
             SubstractCommand = new RelayCommand(() => PlotOperate(Operations.OperationType.Substraction));
             MultiplyCommand = new RelayCommand(() => PlotOperate(Operations.OperationType.Multiplication));
             DivideCommand = new RelayCommand(() => PlotOperate(Operations.OperationType.Division));
-            QuantizeCommand = new RelayCommand(Quantize);
-            ExtrapolateZeroCommand = new RelayCommand(ExtrapolateZero);
-            ShowStatsCommand = new RelayCommand(ShowStats);
-            ShowHistogramCommand = new RelayCommand(ShowHistogram);
             SavePlotImageCommand = new RelayCommand(SavePlotImage);
-            ExtrapolateSincCommand = new RelayCommand(ExtrapolateSinc);
-            ShowErrorsCommand = new RelayCommand(ShowErrors);
-            ConvoluteCommand = new RelayCommand(Convolute);
-            GenerateFilterCommand = new RelayCommand(GenerateFilter);
-            ShowRadarWindowCommand = new RelayCommand(ShowRadarWindow);
+            //ConvoluteCommand = new RelayCommand(Convolute);
+            //GenerateFilterCommand = new RelayCommand(GenerateFilter);
+            SeriesCollection = new SeriesCollection
+            {
+                new LiveCharts.Wpf.LineSeries
+                {
+                    Values = new ChartValues<double> { 3, 5, 7, 4 }
+                },
+                new LiveCharts.Wpf.ColumnSeries
+                {
+                    Values = new ChartValues<decimal> { 5, 6, 2, 7 }
+                }
+            };
         }
 
         #region plot navigation
@@ -386,7 +366,7 @@ namespace PlotsVisualizer.ViewModels
             for (int i = 0; i < points.Length; i += step)
             {
                 point = points[i];
-                series.Points.Add(new DataPoint(point.x, point.y.r));
+                series.Points.Add(new DataPoint(point.x, point.y.Real));
             }
             plot.Series.Add(series);
 
@@ -467,246 +447,49 @@ namespace PlotsVisualizer.ViewModels
             }
         }
 
-        #region quantize
-        private void Quantize()
-        {
-            if (CurrentPlot == null)
-            {
-                return;
-            }
-            try
-            {
-                var newPoints = Quantization.quantizate(CurrentPlot.Signal.points, QuantizationBits);
-                var meta = CurrentPlot.Signal.metadata;
-                string title = meta == null
-                    ? $"{meta.startTime} metadata unavailable"
-                    : $"{meta.startTime} {(meta.isContinous ? "Continous" : "Discrete")} f_sig: {meta.signalFrequency:0.##} f_sam: {meta.samplingFrequency:0.##}";
-                var newSignal = new Types.Signal(meta, newPoints);
-                RemovePlot(CurrentPlotIndex);
-                AddPlot(
-                    CreatePlot(newSignal.points, title),
-                    newSignal);
-            }
-            catch (Exception)
-            {
-                MessageBox.Show("Could not operate successfully on these plots. Cleaned up plots.");
-            }
-        }
-        #endregion
-
 
         #region new Windows
-        private void ShowStats()
-        {
-            if (CurrentPlot != null)
-            {
-                SignalParametersWindow statsWindow = new SignalParametersWindow(new SignalParametersViewModel(CurrentPlot.Signal));
-                statsWindow.Show();
-            }
-        }
 
-        private void ShowHistogram()
-        {
-            if (CurrentPlot != null)
-            {
-                HistogramWindow histogramWindow = new HistogramWindow(new HistogramViewModel(CurrentPlot.Signal));
-                histogramWindow.Show();
-            }
-        }
-
-        private void ShowErrors()
-        {
-            if (FirstToCompare > PlotsCount || SecondToCompare > PlotsCount)
-            {
-                MessageBox.Show($"Invalid plots indexes. Maximum plot index is: {PlotsCount}");
-                return;
-            }
-
-            if (FirstToCompare == SecondToCompare)
-            {
-                MessageBox.Show($"Choose two different plots.");
-                return;
-            }
-
-            var first = Plots[FirstToCompare].Signal;
-            var second = Plots[SecondToCompare].Signal;
-
-            if (first.points.Length != second.points.Length)
-            {
-                MessageBox.Show("Chosen plots are incompatible for operation.");
-                return;
-            }
-
-            for (int i = 0; i < first.points.Length; i++)
-            {
-                if (first.points[i].x != second.points[i].x)
-                {
-                    MessageBox.Show("Plots have different x values.");
-                    return;
-                }
-            }
-
-            ErrorWindow window = new ErrorWindow(new ErrorsViewModel(first, second, ExtrapolationNeighboursCount, first.metadata.samplingFrequency));
-            window.Show();
-        }
-
-
-        private void ShowRadarWindow()
-        {
-            RadarWindow radarWindow = new RadarWindow(new RadarViewModel());
-            radarWindow.Show();
-        }
         #endregion
 
         #region extrapolation
-        private void ExtrapolateZero()
-        {
-            if (CurrentPlot == null)
-            {
-                return;
-            }
-            try
-            {
-                var meta = CurrentPlot.Signal.metadata;
-                var newPoints = Quantization.extrapolateZeroOrder(CurrentPlot.Signal.points,
-                    meta.startTime,
-                    meta.duration,
-                    ExtrapolationFrequency
-                );
-                string title = meta == null
-                    ? $"{meta.startTime} metadata unavailable"
-                    : $"{meta.startTime} {(meta.isContinous ? "Continous" : "Discrete")} f_sig: {meta.signalFrequency:0.##} f_sam: {ExtrapolationFrequency:0.##}";
-                RemovePlot(CurrentPlotIndex);
-                var newSignal = new Types.Signal(meta, newPoints);
-                AddPlot(
-                    CreatePlot(newSignal.points, title),
-                    newSignal);
-            }
-            catch (Exception)
-            {
-                MessageBox.Show("Could not operate successfully on these plots. Cleaned up plots.");
-            }
-        }
 
-        private void GenerateFilter()
-        {
-            Types.Signal filter = Filters.createFilter(FilterType,
-                WindowFunction,
-                FilterOrder,
-                FilterCutOffFrequency,
-                SamplingFrequency);
-            AddPlot(
-                CreatePlot(filter.points, $"Filter: {FilterType} {WindowFunction} M: {FilterOrder}"),
-                filter);
-        }
+        //private void GenerateFilter()
+        //{
+        //    Types.Signal filter = Filters.createFilter(FilterType,
+        //        WindowFunction,
+        //        FilterOrder,
+        //        FilterCutOffFrequency,
+        //        SamplingFrequency);
+        //    AddPlot(
+        //        CreatePlot(filter.points, $"Filter: {FilterType} {WindowFunction} M: {FilterOrder}"),
+        //        filter);
+        //}
 
-        private void Convolute()
-        {
-            if (FirstChosenPlot > PlotsCount || SecondChosenPlot > PlotsCount)
-            {
-                MessageBox.Show($"Invalid plots indexes. Maximum plot index is: {PlotsCount}");
-                return;
-            }
+        //private void Convolute()
+        //{
+        //    if (FirstChosenPlot > PlotsCount || SecondChosenPlot > PlotsCount)
+        //    {
+        //        MessageBox.Show($"Invalid plots indexes. Maximum plot index is: {PlotsCount}");
+        //        return;
+        //    }
 
-            if (FirstChosenPlot == SecondChosenPlot)
-            {
-                MessageBox.Show($"Choose two different plots.");
-                return;
-            }
+        //    if (FirstChosenPlot == SecondChosenPlot)
+        //    {
+        //        MessageBox.Show($"Choose two different plots.");
+        //        return;
+        //    }
 
-            var first = Plots[FirstChosenPlot].Signal;
-            var second = Plots[SecondChosenPlot].Signal;
+        //    var first = Plots[FirstChosenPlot].Signal;
+        //    var second = Plots[SecondChosenPlot].Signal;
 
-            var convoluted = Convolution.convolute(first,second);
+        //    var convoluted = Convolution.convolute(first,second);
 
-            AddPlot(
-                CreatePlot(convoluted.points, "convoluted plot"),
-                convoluted);
-            //var someSignal = SignalGeneration.signalGenerator(new Types.SignalMetadata(SignalType, IsContinous,
-            //    Amplitude, StartTime, Duration, DutyCycle, SignalFrequency, SamplingFrequency));
-            //var testSignal = SignalProcessing.Convolution.convolute(
-            //    new Types.Signal(someSignal.metadata,
-            //        ListModule.OfSeq(new List<Types.Point>()
-            //        {
-            //            new Types.Point(0, new Types.Complex(1, 0)),
-            //            new Types.Point(1, new Types.Complex(2, 0)),
-            //            new Types.Point(2, new Types.Complex(3, 0)),
-            //            new Types.Point(3, new Types.Complex(4, 0)),
-            //        })),
-            //    new Types.Signal(someSignal.metadata,
-            //        ListModule.OfSeq(new List<Types.Point>()
-            //        {
-            //            new Types.Point(0, new Types.Complex(5, 0)),
-            //            new Types.Point(1, new Types.Complex(6, 0)),
-            //            new Types.Point(2, new Types.Complex(7, 0)),
-            //        })));
-
-            //AddPlot(
-            //    CreatePlot(testSignal.points, "test plot"),
-            //    testSignal);
-        }
-
-        private void ExtrapolateSinc()
-        {
-            if (CurrentPlot == null)
-            {
-                return;
-            }
-            try
-            {
-                var meta = CurrentPlot.Signal.metadata;
-                var newPoints = GenerateSincExtrapolation();
-                string title = meta == null
-                    ? $"{meta.startTime} metadata unavailable"
-                    : $"extrapolated sinc {meta.startTime} {(meta.isContinous ? "Continous" : "Discrete")} f_sig: {meta.signalFrequency:0.##} f_sam: {ExtrapolationFrequency:0.##}";
-                RemovePlot(CurrentPlotIndex);
-                var newSignal = new Types.Signal(meta, ListModule.OfSeq(newPoints));
-                AddPlot(
-                    CreatePlot(newSignal.points, title),
-                    newSignal);
-            }
-            catch (Exception)
-            {
-                MessageBox.Show("Could not operate successfully on these plots. Cleaned up plots.");
-            }
-        }
-
-        private List<Types.Point> GenerateSincExtrapolation()
-        {
-            double newFreq = ExtrapolationFrequency;
-            int howManyPoints = ExtrapolationNeighboursCount * 2;
-            double startTime = CurrentPlot.Signal.metadata.startTime;
-            double duration = CurrentPlot.Signal.metadata.duration;
-            double samplingFreq = CurrentPlot.Signal.metadata.samplingFrequency;
-            List<Types.Point> points = CurrentPlot.Signal.points.ToList();
-
-            List<(Types.Point p, int n)> pointsWithN = new List<(Types.Point p, int n)>();
-            for (int i = 0; i < points.Count; i++)
-            {
-                pointsWithN.Add((points[i], i));
-            }
-
-            ConcurrentBag<double> newX = new ConcurrentBag<double>(SignalGeneration.generateXValues(duration, newFreq, startTime).ToList());
-            double T = 1.0 / samplingFreq;
-            return newX
-                .AsParallel()
-                .Select(x =>
-                new Types.Point(x, new Types.Complex(
-                    pointsWithN
-                        .OrderBy(p => Math.Abs(p.p.x - x))
-                        .Take(Math.Min(howManyPoints, pointsWithN.Count))
-                        .Select(c =>
-                        {
-                            return c.p.y.r* Sinc(x / T - c.n);
-                        })
-                        .Sum(),
-                    0)))
-                .OrderBy(p => p.x)
-                .ToList();
-
-            double Sinc(double t) 
-                => t == 0 ? 1 : Math.Sin(Math.PI * t) / (Math.PI * t);
-        }
+        //    AddPlot(
+        //        CreatePlot(convoluted.points, "convoluted plot"),
+        //        convoluted);
+        //}
+        
         #endregion
     }
 }

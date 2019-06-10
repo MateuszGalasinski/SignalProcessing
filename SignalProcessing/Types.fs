@@ -2,23 +2,24 @@
 
 [<AutoOpen>]
 module Types =
-    type Complex(r: double, i : double) =
-       member this.r = r
-       member this.i = i
-       //overloading + operator
-       static member (+) (a : Complex, b: Complex) =
-          Complex(a.r + b.r, a.i + b.i)
+    open MathNet.Numerics
+    //type Complex(r: double, i : double) =
+    //   member this.r = r
+    //   member this.i = i
+    //   //overloading + operator
+    //   static member (+) (a : Complex, b: Complex) =
+    //      Complex(a.r + b.r, a.i + b.i)
 
-       //overloading - operator
-       static member (-) (a : Complex, b: Complex) =
-          Complex(a.r - b.r, a.i - b.i)
+    //   //overloading - operator
+    //   static member (-) (a : Complex, b: Complex) =
+    //      Complex(a.r - b.r, a.i - b.i)
 
-       // overriding the ToString method
-       member this.ToString(format:string) =
-          this.r.ToString(format) + " i" + this.i.ToString(format)
+    //   // overriding the ToString method
+    //   member this.ToString(format:string) =
+    //      this.r.ToString(format) + " i" + this.i.ToString(format)
 
 
-    type Point(x: double, y : Complex) =
+    type Point(x: double, y : complex) =
        member this.x = x
        member this.y = y
        //overloading + operator
