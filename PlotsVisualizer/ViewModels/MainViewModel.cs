@@ -1,9 +1,6 @@
 ﻿using LiveCharts;
-using Microsoft.FSharp.Collections;
 using Microsoft.Win32;
 using Newtonsoft.Json;
-using OxyPlot;
-using OxyPlot.Wpf;
 using SignalProcessing;
 using System;
 using System.Collections.Generic;
@@ -12,7 +9,6 @@ using System.IO;
 using System.Media;
 using System.Windows;
 using UILogic.Base;
-using LineSeries = OxyPlot.Series.LineSeries;
 using Plot = PlotsVisualizer.Models.Plot;
 
 namespace PlotsVisualizer.ViewModels
@@ -127,11 +123,11 @@ namespace PlotsVisualizer.ViewModels
             set => SetProperty(ref _isContinous, value);
         }
 
-        public int FilterOrder
-        {
-            get => _filterOrder;
-            set => SetProperty(ref _filterOrder, value);
-        }
+        //public int FilterOrder
+        //{
+        //    get => _filterOrder;
+        //    set => SetProperty(ref _filterOrder, value);
+        //}
         //public Filters.FilterType FilterType
         //{
         //    get => _filterType;
@@ -142,11 +138,14 @@ namespace PlotsVisualizer.ViewModels
         //    get => _windowFunction;
         //    set => SetProperty(ref _windowFunction, value);
         //}
-        public double FilterCutOffFrequency
-        {
-            get => _filterCutOffFrequency;
-            set => SetProperty(ref _filterCutOffFrequency, value);
-        }
+        //public double FilterCutOffFrequency
+        //{
+        //    get => _filterCutOffFrequency;
+        //    set => SetProperty(ref _filterCutOffFrequency, value);
+        //}
+
+        public Func<double, string> YFormatter { get;  }
+        = value => value.ToString("F4");
         #endregion
 
         #region Commands
@@ -192,7 +191,7 @@ namespace PlotsVisualizer.ViewModels
             SubstractCommand = new RelayCommand(() => PlotOperate(Operations.OperationType.Substraction));
             MultiplyCommand = new RelayCommand(() => PlotOperate(Operations.OperationType.Multiplication));
             DivideCommand = new RelayCommand(() => PlotOperate(Operations.OperationType.Division));
-            SavePlotImageCommand = new RelayCommand(SavePlotImage);
+            //SavePlotImageCommand = new RelayCommand(SavePlotImage);
             //ConvoluteCommand = new RelayCommand(Convolute);
             //GenerateFilterCommand = new RelayCommand(GenerateFilter);
             SeriesCollection = new SeriesCollection
@@ -294,7 +293,7 @@ namespace PlotsVisualizer.ViewModels
                     ? $"Metadata unavailable"
                     : $"{signal.metadata.signalType} {(signal.metadata.isContinous ? "Continous" : "Discrete")} f_sig: {signal.metadata.signalFrequency:0.##} f_sam: {signal.metadata.samplingFrequency:0.##}";
 
-                AddPlot(CreatePlot(signal.points, title), signal);
+                AddPlot(CreatePlot(signal, title), signal);
                 MoveToPlot(Plots.Count - 1);
             }
             catch (Exception e)
@@ -306,18 +305,18 @@ namespace PlotsVisualizer.ViewModels
             SystemSounds.Beep.Play();
         }
 
-        private void SavePlotImage()
-        {
-            if (CurrentPlot?.PlotModel != null)
-            {
-                var pngExporter = new PngExporter { Width = 1200, Height = 800, Background = OxyColors.White };
-                string title = CurrentPlot.PlotModel.Title.Replace(':', '_').Replace(' ', '_');
-                string filePath = Path.Combine(Directory.GetCurrentDirectory(), "plots");
-                Directory.CreateDirectory(filePath);
-                filePath = Path.Combine(filePath, Path.ChangeExtension(title, "png"));
-                pngExporter.ExportToFile(CurrentPlot.PlotModel, filePath);
-            }
-        }
+        //private void SavePlotImage()
+        //{
+        //    if (CurrentPlot?.PlotModel != null)
+        //    {
+        //        var pngExporter = new PngExporter { Width = 1200, Height = 800, Background = OxyColors.White };
+        //        string title = CurrentPlot.PlotModel.Title.Replace(':', '_').Replace(' ', '_');
+        //        string filePath = Path.Combine(Directory.GetCurrentDirectory(), "plots");
+        //        Directory.CreateDirectory(filePath);
+        //        filePath = Path.Combine(filePath, Path.ChangeExtension(title, "png"));
+        //        pngExporter.ExportToFile(CurrentPlot.PlotModel, filePath);
+        //    }
+        //}
         #endregion
 
         private void RemovePlot(int index)
@@ -346,31 +345,34 @@ namespace PlotsVisualizer.ViewModels
             }
         }
 
-        private void AddPlot(PlotModel plot, Types.Signal signal)
+        private void AddPlot(Plot plot, Types.Signal signal)
         {
-            Plots.Add(new Plot()
-            {
-                PlotModel = plot,
-                Signal = signal
-            });
+            Plots.Add(plot);
             PlotsCount = Plots.Count - 1;
             MoveToPlot(PlotsCount);
         }
 
-        private PlotModel CreatePlot(FSharpList<Types.Point> points, string title)
+        private Plot CreatePlot(Types.Signal signal, string title)
         {
-            var plot = new PlotModel { Title = title };
-            var series = new LineSeries { LineStyle = LineStyle.Solid, MarkerType = MarkerType.Circle, MarkerSize = 1.5, MarkerFill = OxyColors.SlateGray };
+            var plot = new SeriesCollection();
+            var points = signal.points;
+            //var series = new LineSeries { LineStyle = LineStyle.Solid, MarkerType = MarkerType.Circle, MarkerSize = 1.5, MarkerFill = OxyColors.SlateGray };
             int step = (int)Math.Ceiling((double)points.Length / stepDivisor);
-            Types.Point point = null;
+            var values = new ChartValues<double>();
+            List<string> labels = new List<string>();
             for (int i = 0; i < points.Length; i += step)
             {
-                point = points[i];
-                series.Points.Add(new DataPoint(point.x, point.y.Real));
+                values.Add(points[i].y.Real);
+                labels.Add(points[i].x.ToString("F4"));
             }
-            plot.Series.Add(series);
 
-            return plot;
+            plot.Add(new LiveCharts.Wpf.LineSeries
+            {
+                Values = new ChartValues<double>(values),
+                Title = title
+            });
+
+            return new Plot(plot, signal, labels.ToArray());
         }
 
         private void AddNewPlot()
@@ -378,7 +380,8 @@ namespace PlotsVisualizer.ViewModels
             var signal = SignalGeneration.signalGenerator(new Types.SignalMetadata(SignalType, IsContinous, Amplitude, StartTime, Duration, DutyCycle, SignalFrequency, SamplingFrequency));
 
             AddPlot(
-                CreatePlot(signal.points, $"{SignalType} {(signal.metadata.isContinous ? "Continous" : "Discrete")} A: {Amplitude:0.##} f_sig: {SignalFrequency:0.##} f_sam: {SamplingFrequency:0.##}"),
+                CreatePlot(signal,
+                    $"{SignalType} {(signal.metadata.isContinous ? "Continous" : "Discrete")} A: {Amplitude:0.##} f_sig: {SignalFrequency:0.##} f_sam: {SamplingFrequency:0.##}"),
                 signal);
 
             SystemSounds.Beep.Play();
@@ -434,7 +437,7 @@ namespace PlotsVisualizer.ViewModels
                     ? $"{type} metadata unavailable"
                     : $"{type} {(first.metadata.isContinous ? "Continous" : "Discrete")} f_sig: {first.metadata.signalFrequency:0.##} f_sam: {first.metadata.samplingFrequency:0.##}";
                 AddPlot(
-                    CreatePlot(newSignal.points, title),
+                    CreatePlot(newSignal, title),
                     newSignal);
             }
             catch (Exception)
