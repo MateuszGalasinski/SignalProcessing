@@ -11,7 +11,7 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
         mc:Ignorable="d"
-        Title="MainWindow" Height="800" Width="1400"
+        Title="MainWindow" Height="1200" Width="1400"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         TextElement.FontWeight="Regular"
         TextElement.FontSize="13"
@@ -22,13 +22,15 @@
 
     <Window.Resources>
         <Style TargetType="{x:Type Button}">
-            <Setter Property="Background" Value="Goldenrod" />
-            <Setter Property="Foreground" Value="#000000" />
-            <Setter Property="FontSize" Value="15" />
-            <Setter Property="Margin" Value="2,5,2,5" />
+            <Setter Property="Background" Value="{DynamicResource SecondaryAccentBrush}" />
+            <!--<Setter Property="Foreground" Value="#000000" />-->
+            <!--<Setter Property="FontSize" Value="15" />-->
+            <Setter Property="Margin" Value="10" />
+            <Setter Property="MaxWidth" Value="120" />
+            <Setter Property="MinWidth" Value="100" />
             <Setter Property="SnapsToDevicePixels" Value="True"/>
 
-                <Setter Property="Template">
+            <!--<Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type Button}">
                         <Border CornerRadius="6" Background="{TemplateBinding Background}">
@@ -57,184 +59,206 @@
                         </ControlTemplate.Triggers>
                     </ControlTemplate>
                 </Setter.Value>
-            </Setter>
+            </Setter>-->
         </Style>
     </Window.Resources>
-    <Grid>
-        <Grid.RowDefinitions>
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="10*"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-            <RowDefinition Height="*"></RowDefinition>
-        </Grid.RowDefinitions>
-        <Grid.ColumnDefinitions>
-            <ColumnDefinition Width="0.5*"></ColumnDefinition>
-            <ColumnDefinition Width="2*"></ColumnDefinition>
-            <ColumnDefinition Width="2*"></ColumnDefinition>
-            <ColumnDefinition Width="2*"></ColumnDefinition>
-            <ColumnDefinition Width="2*"></ColumnDefinition>
-            <ColumnDefinition Width="2*"></ColumnDefinition>
-            <ColumnDefinition Width="2*"></ColumnDefinition>
-            <ColumnDefinition Width="2*"></ColumnDefinition>
-            <ColumnDefinition Width="2*"></ColumnDefinition>
-            <ColumnDefinition Width="2*"></ColumnDefinition>
-            <ColumnDefinition Width="0.5*"></ColumnDefinition>
-        </Grid.ColumnDefinitions>
-        <!--#region Read save -->
+    <StackPanel Margin="20">
+        <materialDesign:Card Margin="30, 10, 30, 10" MinHeight="150">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="*"></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                    <ColumnDefinition Width="*"/>
+                </Grid.ColumnDefinitions>
+                <StackPanel Grid.Column="0" Grid.RowSpan="3" HorizontalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" Margin="10, 10, 10, 30">
+                        <StackPanel>
+                            <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Bottom">StartTime</TextBlock>
+                            <TextBox FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"
+                                 MinWidth="80" MaxWidth="120" Margin="10, 0, 10, 0" Text="{Binding StartTime}"></TextBox>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Bottom" >Amplitude</TextBlock>
+                            <TextBox FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="80" MaxWidth="120" Margin="10, 0, 10, 0"
+                                     Text="{Binding Amplitude}"></TextBox>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Bottom">Frequency</TextBlock>
+                            <TextBox FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="80" MaxWidth="120" Margin="10, 0, 10, 0"
+                                Text="{Binding SignalFrequency}"></TextBox>
 
-        <!--<Rectangle Grid.Row="0" Grid.RowSpan="4" Grid.Column="8" Grid.ColumnSpan="2" Fill="Gainsboro"/>-->
-        <TextBlock Text="Save/Read file name: " FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="0" Grid.Column="8" Grid.ColumnSpan="2"></TextBlock>
-        <TextBox Text="{Binding FileName, Mode=OneWay}" FontSize="16" MinWidth="200" MaxWidth="200"
-                 HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="1" Grid.Column="8" Grid.ColumnSpan="2"
-                 IsReadOnly="True">
-            <i:Interaction.Triggers>
-                <i:EventTrigger EventName="MouseDoubleClick" >
-                    <i:InvokeCommandAction Command="{Binding ReadFilePathCommand}" />
-                </i:EventTrigger>
-            </i:Interaction.Triggers>
-        </TextBox>
-        <Button Content="Save to file" Command="{Binding SavePlotCommand}" Grid.Row="2" Grid.Column="9" ></Button>
-        <Button Content="Load from file" Command="{Binding LoadPlotCommand}" Grid.Row="2" Grid.Column="8" ></Button>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center"  Margin="10, 10, 10, 30">
+                        <StackPanel>
+                            <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Bottom">Duration</TextBlock>
+                            <TextBox FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="80" MaxWidth="120" Margin="10, 0, 10, 0"
+                                Text="{Binding Duration}"></TextBox>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Bottom" >DutyCycle</TextBlock>
+                            <TextBox FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="80" MaxWidth="120" Margin="10, 0, 10, 0"
+                         Text="{Binding DutyCycle}"></TextBox>
+                        </StackPanel>
+                        <StackPanel>
+                            <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Bottom">Sampling freq.</TextBlock>
+                            <TextBox FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="80" MaxWidth="120" Margin="10, 0, 10, 0"
+                            Text="{Binding SamplingFrequency}"></TextBox>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" VerticalAlignment="Center" HorizontalAlignment="Center">
+                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                            <ComboBox FontSize="16" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Width="120"
+                                      ItemsSource="{Binding Path=SignalType, Converter={helpers:SignalEnumToCollectionConverter}, Mode=OneTime}"
+                                      SelectedValue="{Binding Path=SignalType}" />
+                            <Separator Width="10" Visibility="Hidden"></Separator>
+                            <Button Content="Add plot" Command="{Binding AddPlotCommand}"></Button>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+                <StackPanel Grid.Row="0" Grid.Column="1" Grid.RowSpan="3" VerticalAlignment="Center">
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <StackPanel>
+                            <TextBlock FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Bottom">Choose signals to operate on</TextBlock>
 
-        <Button Content="Save plot to image"  Command="{Binding SavePlotImageCommand}" 
-                Grid.Row="3" Grid.Column="8" Grid.ColumnSpan="2" ></Button>
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                                <TextBox FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center" MinWidth="80" MaxWidth="120"
+                                     Text="{Binding FirstChosenPlot}"></TextBox>
+                                <TextBox FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center" HorizontalContentAlignment="Center"  MinWidth="80" MaxWidth="120"
+                                     Text="{Binding SecondChosenPlot}"></TextBox>
+                            </StackPanel>
+                        </StackPanel>
+                    </StackPanel>
+                    <Separator Height="20" Visibility="Hidden"></Separator>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <StackPanel>
+                            <Button Content="+" Command="{Binding AddCommand}" FontWeight="UltraBold"
+                            VerticalContentAlignment="Center" HorizontalContentAlignment="Center" ></Button>
+                            <Button Content="-" Command="{Binding SubstractCommand}" FontWeight="UltraBold"
+                            VerticalContentAlignment="Center" HorizontalContentAlignment="Center"></Button>
+                        </StackPanel>
+                        <StackPanel>
+                            <Button Content="*" Command="{Binding MultiplyCommand}" FontWeight="UltraBold"
+                        VerticalContentAlignment="Center" HorizontalContentAlignment="Center" ></Button>
+                            <Button Content="/" Command="{Binding DivideCommand}" FontWeight="UltraBold"
+                        VerticalContentAlignment="Center" HorizontalContentAlignment="Center"></Button>
+                        </StackPanel>
+                    </StackPanel>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                        <Button Content="Convolution" Command="{Binding ConvoluteCommand}" ></Button>
+                    </StackPanel>
+                </StackPanel>
 
-        <!--#endregion -->
+                <!--SAVE PLOT-->
+                <StackPanel Grid.Row="0" Grid.Column="2" Grid.RowSpan="3" VerticalAlignment="Center" Margin="0,36">
+                    <TextBlock Text="Save/Read file name: " FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
+                    <Separator Height="10" Visibility="Hidden"></Separator>
+                    <TextBox Text="{Binding FileName, Mode=OneWay}" FontSize="16" MinWidth="200" MaxWidth="200"
+                             IsReadOnly="True">
+                        <i:Interaction.Triggers>
+                            <i:EventTrigger EventName="MouseDoubleClick" >
+                                <i:InvokeCommandAction Command="{Binding ReadFilePathCommand}" />
+                            </i:EventTrigger>
+                        </i:Interaction.Triggers>
+                    </TextBox>
 
-        <!--#region New signal -->
-        <!--<Rectangle Fill="{DynamicResource SecondaryAccentForegroundBrush}" Grid.Row="0" Margin="20,0,0,0" Grid.RowSpan="4" Grid.Column="0" Grid.ColumnSpan="5"/>-->
+                    <Separator Height="20" Visibility="Hidden"></Separator>
+                    <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
 
-        <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="1">StartTime</TextBlock>
-        <TextBox FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="80" MaxWidth="80" Grid.Row="1" Grid.Column="1"
-                 Text="{Binding StartTime}"></TextBox>
+                        <Button Content="Load from file" Command="{Binding LoadPlotCommand}"  ></Button>
+                        <Button Content="Save to file" Command="{Binding SavePlotCommand}" ></Button>
+                    </StackPanel>
 
-        <TextBlock Grid.Row="2" Grid.Column="1"
-            FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Bottom" >Amplitude</TextBlock>
-        <TextBox Grid.Row="3" Grid.Column="1"
-                 FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="80" MaxWidth="80"
-                 Text="{Binding Amplitude}"></TextBox>
+                    <Button Content="Save image"  Command="{Binding SavePlotImageCommand}" ></Button>
+                </StackPanel>
+            </Grid>
 
-        <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="2">Duration</TextBlock>
-        <TextBox FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="80" MaxWidth="80" Grid.Row="1" Grid.Column="2"
-                 Text="{Binding Duration}"></TextBox>
+        </materialDesign:Card>
+        <materialDesign:Card  Margin="30, 10, 30, 10" Height="750">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="*"></RowDefinition>
+                    <RowDefinition Height="8*"></RowDefinition>
+                </Grid.RowDefinitions>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                    <ColumnDefinition Width="*"></ColumnDefinition>
+                </Grid.ColumnDefinitions>
 
-        <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="2" Grid.Column="2">DutyCycle</TextBlock>
-        <TextBox FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="80" MaxWidth="80" Grid.Row="3" Grid.Column="2"
-                 Text="{Binding DutyCycle}"></TextBox>
+                <StackPanel Grid.Row="1" Grid.ColumnSpan="2">
+                    <TextBlock FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Bottom">Real series</TextBlock>
+                    <lvc:CartesianChart Series="{Binding CurrentPlot.RealSeries}" Height="300" Margin="20,0,20,30" 
+                                        Background="{DynamicResource MaterialDesignPaper}"
+                                        LegendLocation="Top">
+                        <lvc:CartesianChart.DataTooltip >
+                            <lvc:DefaultTooltip BulletSize="20" ShowSeries="False"
+                                                ShowTitle="True" SelectionMode="SharedXValues"
+                                                Background="{DynamicResource MaterialDesignPaper}"/>
+                        </lvc:CartesianChart.DataTooltip>
+                        <lvc:CartesianChart.AxisY>
+                            <lvc:Axis 
+                                ShowLabels="True" 
+                                DisableAnimations="True"
+                                Title="y" LabelFormatter="{Binding YFormatter}"></lvc:Axis>
+                        </lvc:CartesianChart.AxisY>
+                        <lvc:CartesianChart.AxisX>
+                            <lvc:Axis 
+                                ShowLabels="True" 
+                                DisableAnimations="True"
+                                Title="x" Labels="{Binding CurrentPlot.Labels}"></lvc:Axis>
+                        </lvc:CartesianChart.AxisX>
+                    </lvc:CartesianChart>
 
-        <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="3">Frequency</TextBlock>
-        <TextBox FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="80" MaxWidth="80" Grid.Row="1" Grid.Column="3"
-                 Text="{Binding SignalFrequency}"></TextBox>
-
-        <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="2" Grid.Column="3">Sampling freq.</TextBlock>
-        <TextBox FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" MinWidth="80" MaxWidth="80" Grid.Row="3" Grid.Column="3"
-                 Text="{Binding SamplingFrequency}"></TextBox>
-
-        <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="0" Grid.Column="4">Is continous ?</TextBlock>
-        <CheckBox HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="1" Grid.Column="4"
-                  IsChecked="{Binding IsContinous}"></CheckBox>
-
-        <ComboBox Grid.Row="2" Grid.Column="4"
-                  FontSize="16" HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
-                  ItemsSource="{Binding Path=SignalType, Converter={helpers:SignalEnumToCollectionConverter}, Mode=OneTime}"
-                  SelectedValue="{Binding Path=SignalType}" />
-
-        <Button Content="Add plot" Command="{Binding AddPlotCommand}" Grid.Row="3" Grid.Column="4"></Button>
-        <!--#endregion-->
-        <TextBlock FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Bottom" Grid.Row="4" Grid.Column="1" Grid.ColumnSpan="2">Choose signals to operate on</TextBlock>
-        <TextBox Grid.Row="5" Grid.Column="1" 
-                 FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"  MinWidth="80" MaxWidth="80"
-                 Text="{Binding FirstChosenPlot}"></TextBox>
-        <TextBox FontSize="20" HorizontalAlignment="Center" VerticalAlignment="Center"  MinWidth="80" MaxWidth="80" Grid.Row="5" Grid.Column="2"
-                 Text="{Binding SecondChosenPlot}"></TextBox>
-
-        <Button Content="Convolution" Command="{Binding ConvoluteCommand}" 
-                Grid.Row="8" Grid.Column="1" Grid.ColumnSpan="2"></Button>
+                    <TextBlock FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Bottom">Imaginary series</TextBlock>
+                    <lvc:CartesianChart Series="{Binding CurrentPlot.ImaginarySeries}" Height="300" Margin="20,0,20,30" 
+                                        Background="{DynamicResource MaterialDesignPaper}"
+                                        LegendLocation="Bottom" >
+                        <lvc:CartesianChart.DataTooltip >
+                            <lvc:DefaultTooltip BulletSize="20" ShowSeries="False"
+                                                ShowTitle="True" SelectionMode="SharedXValues"
+                                                Background="{DynamicResource MaterialDesignPaper}"/>
+                        </lvc:CartesianChart.DataTooltip>
+                        <lvc:CartesianChart.AxisY>
+                            <lvc:Axis ShowLabels="True" 
+                                      DisableAnimations="True"
+                                      Title="y" LabelFormatter="{Binding YFormatter}"></lvc:Axis>
+                        </lvc:CartesianChart.AxisY>
+                        <lvc:CartesianChart.AxisX>
+                            <lvc:Axis Title="x" Labels="{Binding CurrentPlot.Labels}"></lvc:Axis>
+                        </lvc:CartesianChart.AxisX>
+                    </lvc:CartesianChart>
+                </StackPanel>
 
 
-        <!--#region FILTERS -->
-        <!--<TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="5" Grid.Column="3">Filter type</TextBlock>
-        <ComboBox Grid.Row="5" Grid.Column="4"
-                  FontSize="16" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="10,5,10,5"
-                  ItemsSource="{Binding Path=FilterType, Converter={helpers:EnumToCollectionConverter}, Mode=OneTime}"
-                  SelectedValue="{Binding Path=FilterType}" />
-        <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="6" Grid.Column="3">Window function</TextBlock>
-        <ComboBox Grid.Row="6" Grid.Column="4"
-                  FontSize="16" HorizontalContentAlignment="Center" VerticalContentAlignment="Center" Margin="10,5,10,5"
-                  ItemsSource="{Binding Path=WindowFunction, Converter={helpers:EnumToCollectionConverter}, Mode=OneTime}"
-                  SelectedValue="{Binding Path=WindowFunction}" />
-        <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="7" Grid.Column="3">Filter order</TextBlock>
-        <TextBox Grid.Row="7" Grid.Column="4" 
-                 HorizontalAlignment="Center" VerticalAlignment="Center" MaxHeight="25" MinWidth="80" MaxWidth="80"
-                 FontSize="20" Text="{Binding FilterOrder}"></TextBox>
-
-        <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="5" Grid.Column="5">Cut-off frequency</TextBlock>
-        <TextBox Grid.Row="5" Grid.Column="6" 
-                 HorizontalAlignment="Center" VerticalAlignment="Center" MaxHeight="25" MinWidth="80" MaxWidth="80"
-                 FontSize="20" Text="{Binding FilterCutOffFrequency}"></TextBox>
-        <TextBlock FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center" Grid.Row="6" Grid.Column="5">Sampling frequency</TextBlock>
-        <TextBox Grid.Row="6" Grid.Column="6" 
-                 HorizontalAlignment="Center" VerticalAlignment="Center" MaxHeight="25" MinWidth="80" MaxWidth="80"
-                 FontSize="20" Text="{Binding SamplingFrequency}"></TextBox>
-
-        <Button Content="Generate filter" Command="{Binding GenerateFilterCommand}" 
-                Grid.Row="8" Grid.Column="4" ></Button>-->
-        <!--#endregion-->
-
-        <Button Content="+" Command="{Binding AddCommand}" FontWeight="UltraBold"
-                VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Grid.Row="6" Grid.Column="1" ></Button>
-        <Button Content="-" Command="{Binding SubstractCommand}" FontWeight="UltraBold"
-                VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Grid.Row="6" Grid.Column="2" ></Button>
-        <Button Content="*" Command="{Binding MultiplyCommand}" FontWeight="UltraBold"
-                VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Grid.Row="7" Grid.Column="1" ></Button>
-        <Button Content="/" Command="{Binding DivideCommand}" FontWeight="UltraBold"
-                VerticalContentAlignment="Center" HorizontalContentAlignment="Center" Grid.Row="7" Grid.Column="2" ></Button>
-
-        <!--<oxy:PlotView Background="{DynamicResource MaterialDesignBody}" Grid.Row="8" Grid.RowSpan="6" Grid.ColumnSpan="12" Model="{Binding CurrentPlot.PlotModel}" Margin="20,30,20,30" />-->
-        <!--<lvc:CartesianChart Grid.Row="8" Grid.RowSpan="6" Grid.ColumnSpan="12" Margin="20,30,20,30" 
-            Series="{Binding SeriesCollection}" />-->
-
-        <lvc:CartesianChart Series="{Binding CurrentPlot.SeriesCollection}"
-                            Grid.Row="8" Grid.RowSpan="6" Grid.ColumnSpan="12" Margin="20,30,20,30" 
-                            Background="{DynamicResource MaterialDesignBody}"
-                            LegendLocation="Right" >
-            <lvc:CartesianChart.DataTooltip >
-                <lvc:DefaultTooltip BulletSize="20" SelectionMode="OnlySender" Background="{DynamicResource MaterialDesignPaper}"/>
-            </lvc:CartesianChart.DataTooltip>
-            <lvc:CartesianChart.AxisY>
-                <lvc:Axis Title="x" LabelFormatter="{Binding YFormatter}"></lvc:Axis>
-            </lvc:CartesianChart.AxisY>
-            <lvc:CartesianChart.AxisX>
-                <lvc:Axis Title="y" Labels="{Binding CurrentPlot.Labels}"></lvc:Axis>
-            </lvc:CartesianChart.AxisX>
-        </lvc:CartesianChart>
-
-        <!--#region plots navigation -->
-        <TextBlock FontSize="20" HorizontalAlignment="Center"  VerticalAlignment="Bottom" Margin="0, 0, 0, 5"
-                   Grid.Row="9" Grid.Column="3" Foreground="{DynamicResource MaterialDesignLightForeground}">
-            <TextBlock.Text>
-                <MultiBinding StringFormat="{}{0}/{1}">
-                    <Binding Path="CurrentPlotIndex" />
-                    <Binding Path="PlotsCount"/>
-                </MultiBinding>
-            </TextBlock.Text>
-        </TextBlock>
-        <Button Content="&lt;--------" Command="{Binding PreviousPlotCommand}" VerticalAlignment="Bottom" 
-                Grid.Row="9" Grid.Column="1"></Button>
-        <Button Content="--------&gt;" Command="{Binding NextPlotCommand}" VerticalAlignment="Bottom" 
-                Grid.Row="9" Grid.Column="2"></Button>
-        <Button Content="Delete" Command="{Binding DeleteCommand}" VerticalAlignment="Top"
-                Grid.Row="9" Grid.Column="9"></Button>
-        <!--#endregion-->
-    </Grid>
+                <!--#region plots navigation -->
+                <Button Content="&lt;--------" Command="{Binding PreviousPlotCommand}" 
+                        HorizontalAlignment="Left" Margin="20, 20, 30, 0" MaxHeight="30"
+                        Grid.Row="0" Grid.Column="0"></Button>
+                <Button Content="--------&gt;" Command="{Binding NextPlotCommand}"
+                        HorizontalAlignment="Left" Margin="120, 20, 30, 0" MaxHeight="30"
+                        Grid.Row="0" Grid.Column="0"></Button>
+                <Button Content="" Command="{Binding PreviousPlotCommand}"
+                        HorizontalAlignment="Left" Margin="220, 20, 30, 0" MaxHeight="30"
+                        Grid.Row="0" Grid.Column="0"></Button>
+                <TextBlock FontSize="20" HorizontalAlignment="Left"  Margin="240, 20, 0, 0" Height="30"
+                           Grid.Row="0" Grid.Column="0" Foreground="{DynamicResource MaterialDesignLightForeground}">
+                    <TextBlock.Text>
+                        <MultiBinding StringFormat="{}{0}/{1}">
+                            <Binding Path="CurrentPlotIndex" />
+                            <Binding Path="PlotsCount"/>
+                        </MultiBinding>
+                    </TextBlock.Text>
+                </TextBlock>
+                <Button Content="Delete" Command="{Binding DeleteCommand}"
+                        HorizontalAlignment="Right" Margin="20, 20, 20, 0" MaxHeight="30"
+                        Grid.Row="0" Grid.Column="1"></Button>
+                <!--#endregion-->
+            </Grid>
+        </materialDesign:Card>
+    </StackPanel>
 </Window>

@@ -129,6 +129,8 @@
     <Compile Include="Base\IRaiseCanExecuteCommand.cs" />
     <Compile Include="Base\RelayCommand.cs" />
     <Compile Include="Helpers\ClearFocusOnClickBehavior.cs" />
+    <Compile Include="Helpers\FFT.cs" />
+    <Compile Include="Helpers\fftRadix.cs" />
     <Compile Include="Helpers\SignalTypeEnumHelper.cs" />
     <Compile Include="Helpers\EnumToCollectionConverter.cs" />
     <Compile Include="Helpers\SignalEnumToCollectionConverter.cs" />
