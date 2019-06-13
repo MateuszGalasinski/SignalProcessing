@@ -199,6 +199,8 @@ namespace PlotsVisualizer.ViewModels
             {
                 CurrentPlotIndex = index;
                 CurrentPlot = Plots[CurrentPlotIndex];
+                SwitchW();
+                SwitchW();
             }
         }
         #endregion
@@ -346,7 +348,6 @@ namespace PlotsVisualizer.ViewModels
                 new LiveCharts.Wpf.LineSeries {Values = new ChartValues<double>(phaseValues), Title = $"{title} phase"}
             };
 
-
             return new Plot(signal, labels.ToArray(), frequencyLabels, (realPlot, imaginaryPlot), (magnitudePlot, phasePlot));
         }
 
@@ -427,14 +428,19 @@ namespace PlotsVisualizer.ViewModels
             var signal = CurrentPlot.Signal;
             var points = signal.points;
 
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            var result = ComputeFourier(points.Select(p => p.y).ToArray());
+            stopwatch.Stop();
+
             var newQuickSignal = new Types.Signal(
                 signal.metadata,
                 ListModule.OfSeq(
                     GenerateFrequencyScale(points.Length, signal.metadata.samplingFrequency).Zip(
-                        ComputeFourier(points.Select(p => p.y).ToArray()),
+                        result,
                         (p, r) => new Types.Point(p, r)))
             );
-            AddPlot(CreatePlot(newQuickSignal, "DFT"));
+            AddPlot(CreatePlot(newQuickSignal, $"DFT time_{stopwatch.ElapsedMilliseconds}"));
         }
 
         public Complex[] ComputeFourier(Complex[] input)
@@ -459,14 +465,19 @@ namespace PlotsVisualizer.ViewModels
             var signal = CurrentPlot.Signal;
             var points = signal.points;
 
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+            var result = RecursiveFFT(points.Select(p => p.y).ToArray());
+            stopwatch.Stop();
+
             var newQuickSignal = new Types.Signal(
                 signal.metadata,
                 ListModule.OfSeq(
                     GenerateFrequencyScale(points.Length, signal.metadata.samplingFrequency).Zip(
-                        RecursiveFFT(points.Select(p => p.y).ToArray()),
+                        result,
                         (p, r) => new Types.Point(p, r)))
             );
-            AddPlot(CreatePlot(newQuickSignal, "FFT"));
+            AddPlot(CreatePlot(newQuickSignal, $"FFT time_{stopwatch.ElapsedMilliseconds}"));
         }
 
         public static Complex[] RecursiveFFT(Complex[] a)
@@ -513,7 +524,10 @@ namespace PlotsVisualizer.ViewModels
 
         private void WaveletTransformation()
         {
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
             var result = Db8(Extreme.Mathematics.Vector.Create(CurrentPlot.Signal.points.Select(p => p.y.Real).ToArray()));
+            stopwatch.Stop();
             AddPlot(
                 CreatePlot(new Types.Signal(
                     CurrentPlot.Signal.metadata,
@@ -521,7 +535,7 @@ namespace PlotsVisualizer.ViewModels
                         result.Item1.Zip(
                             Enumerable.Range(0, result.Item1.Count),
                             (p, i) => new Types.Point(i, new Complex(p, 0.0))))),
-                    "Wavelet transform 1"
+                    $"Wavelet transform 1 time_{stopwatch.ElapsedMilliseconds}"
                     ));
 
             AddPlot(
@@ -531,7 +545,7 @@ namespace PlotsVisualizer.ViewModels
                             result.Item2.Zip(
                                 Enumerable.Range(0, result.Item2.Count),
                                 (p, i) => new Types.Point(i, new Complex(p, 0.0))))),
-                    "Wavelet transform 2"
+                    $"Wavelet transform 2 time_{stopwatch.ElapsedMilliseconds}"
                 ));
         }
 

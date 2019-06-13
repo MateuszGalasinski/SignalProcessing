@@ -58,8 +58,8 @@ namespace PlotsVisualizer.Models
         {
             if (IsW1)
             {
-                TopSeries = _w2Pair.x;
-                BottomSeries = _w2Pair.m;
+                TopSeries = _w2Pair.m;
+                BottomSeries = _w2Pair.x;
                 Labels = _labelsPair.w2;
                 IsW1 = false;
             }
