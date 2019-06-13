@@ -11,7 +11,7 @@
         xmlns:materialDesign="http://materialdesigninxaml.net/winfx/xaml/themes"
         xmlns:lvc="clr-namespace:LiveCharts.Wpf;assembly=LiveCharts.Wpf"
         mc:Ignorable="d"
-        Title="MainWindow" Height="1200" Width="1400"
+        Title="MainWindow" Height="900" Width="1400"
         TextElement.Foreground="{DynamicResource MaterialDesignBody}"
         TextElement.FontWeight="Regular"
         TextElement.FontSize="13"
@@ -29,41 +29,10 @@
             <Setter Property="MaxWidth" Value="120" />
             <Setter Property="MinWidth" Value="100" />
             <Setter Property="SnapsToDevicePixels" Value="True"/>
-
-            <!--<Setter Property="Template">
-                <Setter.Value>
-                    <ControlTemplate TargetType="{x:Type Button}">
-                        <Border CornerRadius="6" Background="{TemplateBinding Background}">
-                            <Grid>
-                                <Line X1="0" Y1="0" X2="1" Y2="0" Stretch="Fill" VerticalAlignment="Bottom" Grid.RowSpan="2">
-                                    <Line.Stroke>
-                                        <LinearGradientBrush StartPoint="0,0" EndPoint="0,1">
-                                            <GradientStop Color="SlateGray" Offset="0" />
-                                            <GradientStop Color="DarkSlateGray" Offset="1" />
-                                        </LinearGradientBrush>
-                                    </Line.Stroke>
-                                </Line>
-                                <ContentPresenter x:Name="MyContentPresenter" Content="{TemplateBinding Content}" HorizontalAlignment="Center" VerticalAlignment="Center"/>
-                            </Grid>
-                        </Border>
-
-                        <ControlTemplate.Triggers>
-                            <Trigger Property="IsMouseOver" Value="True">
-                                <Setter Property="Background" Value="DarkGoldenrod" />
-                                <Setter Property="Foreground" Value="Gold"/>
-                            </Trigger>
-
-                            <Trigger Property="IsPressed" Value="True">
-                                <Setter Property="Foreground" Value="White" />
-                            </Trigger>
-                        </ControlTemplate.Triggers>
-                    </ControlTemplate>
-                </Setter.Value>
-            </Setter>-->
         </Style>
     </Window.Resources>
     <StackPanel Margin="20">
-        <materialDesign:Card Margin="30, 10, 30, 10" MinHeight="150">
+        <materialDesign:Card Margin="30, 10, 30, 10" MinHeight="200" MaxHeight="200">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"></RowDefinition>
@@ -156,16 +125,10 @@
 
                 <!--SAVE PLOT-->
                 <StackPanel Grid.Row="0" Grid.Column="2" Grid.RowSpan="3" VerticalAlignment="Center" Margin="0,36">
-                    <TextBlock Text="Save/Read file name: " FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
+                    <TextBlock Text="Current file name" FontSize="16" HorizontalAlignment="Center" VerticalAlignment="Center"></TextBlock>
                     <Separator Height="10" Visibility="Hidden"></Separator>
-                    <TextBox Text="{Binding FileName, Mode=OneWay}" FontSize="16" MinWidth="200" MaxWidth="200"
-                             IsReadOnly="True">
-                        <i:Interaction.Triggers>
-                            <i:EventTrigger EventName="MouseDoubleClick" >
-                                <i:InvokeCommandAction Command="{Binding ReadFilePathCommand}" />
-                            </i:EventTrigger>
-                        </i:Interaction.Triggers>
-                    </TextBox>
+                    <TextBlock Text="{Binding FileName, Mode=OneWay}" FontSize="16" MinWidth="200" MaxWidth="200">
+                    </TextBlock>
 
                     <Separator Height="20" Visibility="Hidden"></Separator>
                     <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
@@ -179,7 +142,7 @@
             </Grid>
 
         </materialDesign:Card>
-        <materialDesign:Card  Margin="30, 10, 30, 10" Height="750">
+        <materialDesign:Card  Margin="30, 10, 30, 10" Height="600">
             <Grid>
                 <Grid.RowDefinitions>
                     <RowDefinition Height="*"></RowDefinition>
@@ -192,7 +155,7 @@
 
                 <StackPanel Grid.Row="1" Grid.ColumnSpan="2">
                     <TextBlock FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Bottom">Real series</TextBlock>
-                    <lvc:CartesianChart Series="{Binding CurrentPlot.RealSeries}" Height="300" Margin="20,0,20,30" 
+                    <lvc:CartesianChart Series="{Binding CurrentPlot.TopSeries}" Height="200" Margin="20,0,20,30" 
                                         Background="{DynamicResource MaterialDesignPaper}"
                                         LegendLocation="Top">
                         <lvc:CartesianChart.DataTooltip >
@@ -215,7 +178,7 @@
                     </lvc:CartesianChart>
 
                     <TextBlock FontSize="14" HorizontalAlignment="Center" VerticalAlignment="Bottom">Imaginary series</TextBlock>
-                    <lvc:CartesianChart Series="{Binding CurrentPlot.ImaginarySeries}" Height="300" Margin="20,0,20,30" 
+                    <lvc:CartesianChart Series="{Binding CurrentPlot.BottomSeries}" Height="200" Margin="20,0,20,30" 
                                         Background="{DynamicResource MaterialDesignPaper}"
                                         LegendLocation="Bottom" >
                         <lvc:CartesianChart.DataTooltip >
@@ -234,29 +197,38 @@
                     </lvc:CartesianChart>
                 </StackPanel>
 
+                <StackPanel Orientation="Horizontal" Grid.ColumnSpan="2" Margin="20, 10, 20, 10">
 
+                    <Button Content="&lt;--------" Command="{Binding PreviousPlotCommand}" 
+                            HorizontalAlignment="Left" MaxHeight="30"></Button>
+                    <Button Content="--------&gt;" Command="{Binding NextPlotCommand}"
+                            HorizontalAlignment="Left" MaxHeight="30"></Button>
+                    <Button Content=""
+                            HorizontalAlignment="Left" MaxHeight="30"></Button>
+                    <TextBlock FontSize="20" HorizontalAlignment="Left" Height="30"
+                               Foreground="{DynamicResource MaterialDesignLightForeground}">
+                        <TextBlock.Text>
+                            <MultiBinding StringFormat="{}{0}/{1}">
+                                <Binding Path="CurrentPlotIndex" />
+                                <Binding Path="PlotsCount"/>
+                            </MultiBinding>
+                        </TextBlock.Text>
+                    </TextBlock>
+                    <Separator Width="20"></Separator>
+                    <Button Content="Switch plot type" Command="{Binding SwitchWCommand}"
+                            HorizontalAlignment="Right" MaxHeight="30"></Button>
+                    <Separator Width="20"></Separator>
+                    <Button Content="DFT" Command="{Binding DFTCommand}"
+                            HorizontalAlignment="Right" MaxHeight="30"></Button>
+                    <Button Content="FFT" Command="{Binding FFTCommand}"
+                            HorizontalAlignment="Right" MaxHeight="30"></Button>
+                    <Button Content="Wavelet" Command="{Binding WaveletCommand}"
+                            HorizontalAlignment="Right" MaxHeight="30"></Button>
+                    <Separator Width="20"></Separator>
+                    <Button Content="Delete" Command="{Binding DeleteCommand}"
+                            HorizontalAlignment="Right"  MaxHeight="30"></Button>
+                </StackPanel>
                 <!--#region plots navigation -->
-                <Button Content="&lt;--------" Command="{Binding PreviousPlotCommand}" 
-                        HorizontalAlignment="Left" Margin="20, 20, 30, 0" MaxHeight="30"
-                        Grid.Row="0" Grid.Column="0"></Button>
-                <Button Content="--------&gt;" Command="{Binding NextPlotCommand}"
-                        HorizontalAlignment="Left" Margin="120, 20, 30, 0" MaxHeight="30"
-                        Grid.Row="0" Grid.Column="0"></Button>
-                <Button Content="" Command="{Binding PreviousPlotCommand}"
-                        HorizontalAlignment="Left" Margin="220, 20, 30, 0" MaxHeight="30"
-                        Grid.Row="0" Grid.Column="0"></Button>
-                <TextBlock FontSize="20" HorizontalAlignment="Left"  Margin="240, 20, 0, 0" Height="30"
-                           Grid.Row="0" Grid.Column="0" Foreground="{DynamicResource MaterialDesignLightForeground}">
-                    <TextBlock.Text>
-                        <MultiBinding StringFormat="{}{0}/{1}">
-                            <Binding Path="CurrentPlotIndex" />
-                            <Binding Path="PlotsCount"/>
-                        </MultiBinding>
-                    </TextBlock.Text>
-                </TextBlock>
-                <Button Content="Delete" Command="{Binding DeleteCommand}"
-                        HorizontalAlignment="Right" Margin="20, 20, 20, 0" MaxHeight="30"
-                        Grid.Row="0" Grid.Column="1"></Button>
                 <!--#endregion-->
             </Grid>
         </materialDesign:Card>

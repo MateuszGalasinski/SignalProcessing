@@ -1,11 +1,4 @@
-﻿using LiveCharts;
-using MathNet.Numerics.IntegralTransforms;
-using MathNet.Numerics.LinearAlgebra;
-using Microsoft.FSharp.Collections;
-using Microsoft.Win32;
-using Newtonsoft.Json;
-using SignalProcessing;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -13,6 +6,12 @@ using System.Linq;
 using System.Media;
 using System.Numerics;
 using System.Windows;
+using LiveCharts;
+using MathNet.Numerics.IntegralTransforms;
+using Microsoft.FSharp.Collections;
+using Microsoft.Win32;
+using Newtonsoft.Json;
+using SignalProcessing;
 using UILogic.Base;
 using Plot = PlotsVisualizer.Models.Plot;
 
@@ -24,7 +23,7 @@ namespace PlotsVisualizer.ViewModels
 
         private Plot _currentPlotModel;
         private int _currentPlotIndex = -1;
-        private string _fileName = "my favorite plot";
+        private string _fileName = "My favorite plot";
         private int _plotsCount = 0;
         private double _amplitude = 1;
         private double _startTime = 0;
@@ -36,10 +35,6 @@ namespace PlotsVisualizer.ViewModels
         private int _firstChosenPlot = 0;
         private int _secondChosenPlot = 1;
         private bool _isContinous;
-        private int _filterOrder = 20;
-        //private Filters.FilterType _filterType = Filters.FilterType.LowPass;
-        //private Filters.WindowFunction _windowFunction = Filters.WindowFunction.Blackman;
-        private double _filterCutOffFrequency = 5000;
         private SeriesCollection _seriesCollection;
 
         private List<Plot> Plots { get; } = new List<Plot>();
@@ -128,36 +123,13 @@ namespace PlotsVisualizer.ViewModels
             set => SetProperty(ref _isContinous, value);
         }
 
-        //public int FilterOrder
-        //{
-        //    get => _filterOrder;
-        //    set => SetProperty(ref _filterOrder, value);
-        //}
-        //public Filters.FilterType FilterType
-        //{
-        //    get => _filterType;
-        //    set => SetProperty(ref _filterType, value);
-        //}
-        //public Filters.WindowFunction WindowFunction
-        //{
-        //    get => _windowFunction;
-        //    set => SetProperty(ref _windowFunction, value);
-        //}
-        //public double FilterCutOffFrequency
-        //{
-        //    get => _filterCutOffFrequency;
-        //    set => SetProperty(ref _filterCutOffFrequency, value);
-        //}
-
-        public Func<double, string> YFormatter { get;  }
+        public Func<double, string> YFormatter { get; }
         = value => value.ToString("F4");
         #endregion
 
         #region Commands
         public IRaiseCanExecuteCommand NextPlotCommand { get; }
         public IRaiseCanExecuteCommand PreviousPlotCommand { get; }
-
-        public IRaiseCanExecuteCommand ReadFilePathCommand { get; }
         public IRaiseCanExecuteCommand SavePlotCommand { get; }
         public IRaiseCanExecuteCommand LoadPlotCommand { get; }
 
@@ -168,36 +140,30 @@ namespace PlotsVisualizer.ViewModels
         public IRaiseCanExecuteCommand SubstractCommand { get; }
         public IRaiseCanExecuteCommand MultiplyCommand { get; }
         public IRaiseCanExecuteCommand DivideCommand { get; }
+        public IRaiseCanExecuteCommand SwitchWCommand { get; }
+        public IRaiseCanExecuteCommand DFTCommand { get; }
+        public IRaiseCanExecuteCommand FFTCommand { get; }
+        public IRaiseCanExecuteCommand WaveletCommand { get; }
         #endregion
 
         public MainViewModel()
         {
             NextPlotCommand = new RelayCommand(MoveToNextPlot);
             PreviousPlotCommand = new RelayCommand(MoveToPreviousPlot);
-            ReadFilePathCommand = new RelayCommand(ReadFilePath);
-            SavePlotCommand = new RelayCommand(SaveToFile, () => !string.IsNullOrWhiteSpace(FileName));
-            LoadPlotCommand = new RelayCommand(LoadFromFile, () => File.Exists(FileName));
+            SavePlotCommand = new RelayCommand(SaveToFile);
+            LoadPlotCommand = new RelayCommand(LoadFromFile);
             AddPlotCommand = new RelayCommand(AddNewPlot);
             DeleteCommand = new RelayCommand(() => RemovePlot(CurrentPlotIndex));
             AddCommand = new RelayCommand(() => PlotOperate(Operations.OperationType.Addition));
             SubstractCommand = new RelayCommand(() => PlotOperate(Operations.OperationType.Substraction));
             MultiplyCommand = new RelayCommand(() => PlotOperate(Operations.OperationType.Multiplication));
             DivideCommand = new RelayCommand(() => PlotOperate(Operations.OperationType.Division));
-            //SavePlotImageCommand = new RelayCommand(SavePlotImage);
-            //ConvoluteCommand = new RelayCommand(Convolute);
-            //GenerateFilterCommand = new RelayCommand(GenerateFilter);
-            SeriesCollection = new SeriesCollection
-            {
-                new LiveCharts.Wpf.LineSeries
-                {
-                    Values = new ChartValues<double> { 3, 5, 7, 4 }
-                },
-                new LiveCharts.Wpf.ColumnSeries
-                {
-                    Values = new ChartValues<decimal> { 5, 6, 2, 7 }
-                }
-            };
-            SimpleFourier();
+            SwitchWCommand = new RelayCommand(SwitchW);
+            DFTCommand = new RelayCommand(SimpleFourier);
+            FFTCommand = new RelayCommand(FFT);
+            WaveletCommand = new RelayCommand(WaveletTransformation);
+
+            AddNewPlot();
         }
 
         #region plot navigation
@@ -239,15 +205,17 @@ namespace PlotsVisualizer.ViewModels
 
         #region file save/load
 
-        private void ReadFilePath()
-        {
-            OpenFileDialog fileDialog = new OpenFileDialog();
-
-            FileName = fileDialog.ShowDialog() == true ? fileDialog.FileName : string.Empty;
-        }
-
         private void SaveToFile()
         {
+            SaveFileDialog fileDialog = new SaveFileDialog()
+            {
+                CreatePrompt = true
+            };
+
+            FileName = fileDialog.ShowDialog() == true ? fileDialog.FileName : string.Empty;
+            if (!string.IsNullOrWhiteSpace(FileName))
+                return;
+
             if (Plots.Count < 1)
             {
                 MessageBox.Show("Create some plot first.");
@@ -273,6 +241,12 @@ namespace PlotsVisualizer.ViewModels
         {
             try
             {
+                OpenFileDialog fileDialog = new OpenFileDialog();
+
+                FileName = fileDialog.ShowDialog() == true ? fileDialog.FileName : string.Empty;
+                if (!File.Exists(FileName))
+                    return;
+
                 string path = Path.ChangeExtension(Path.Combine(Directory.GetCurrentDirectory(), FileName), "json");
 
                 Types.Signal signal = null;
@@ -298,18 +272,6 @@ namespace PlotsVisualizer.ViewModels
             SystemSounds.Beep.Play();
         }
 
-        //private void SavePlotImage()
-        //{
-        //    if (CurrentPlot?.PlotModel != null)
-        //    {
-        //        var pngExporter = new PngExporter { Width = 1200, Height = 800, Background = OxyColors.White };
-        //        string title = CurrentPlot.PlotModel.Title.Replace(':', '_').Replace(' ', '_');
-        //        string filePath = Path.Combine(Directory.GetCurrentDirectory(), "plots");
-        //        Directory.CreateDirectory(filePath);
-        //        filePath = Path.Combine(filePath, Path.ChangeExtension(title, "png"));
-        //        pngExporter.ExportToFile(CurrentPlot.PlotModel, filePath);
-        //    }
-        //}
         #endregion
 
         private void RemovePlot(int index)
@@ -352,27 +314,40 @@ namespace PlotsVisualizer.ViewModels
 
             var realValues = new ChartValues<double>();
             var imaginaryValues = new ChartValues<double>();
+            var magnitudeValues = new ChartValues<double>();
+            var phaseValues = new ChartValues<double>();
             List<string> labels = new List<string>();
+            string[] frequencyLabels = Fourier.FrequencyScale(points.Length, signal.metadata.samplingFrequency)
+                .Select(v => v.ToString()).ToArray();
             var orderedPoints = points.OrderBy(p => p.x).ToList();
             for (int i = 0; i < points.Length; i += step)
             {
                 realValues.Add(orderedPoints[i].y.Real);
                 imaginaryValues.Add(orderedPoints[i].y.Imaginary);
+                magnitudeValues.Add(orderedPoints[i].y.Magnitude);
+                phaseValues.Add(orderedPoints[i].y.Phase);
                 labels.Add(orderedPoints[i].x.ToString("F4"));
             }
 
             var realPlot = new SeriesCollection
             {
-                new LiveCharts.Wpf.LineSeries {Values = new ChartValues<double>(realValues), Title = title}
+                new LiveCharts.Wpf.LineSeries {Values = new ChartValues<double>(realValues), Title = $"{title} real"}
             };
-
             var imaginaryPlot = new SeriesCollection
             {
-                new LiveCharts.Wpf.LineSeries {Values = new ChartValues<double>(imaginaryValues), Title = title}
+                new LiveCharts.Wpf.LineSeries {Values = new ChartValues<double>(imaginaryValues), Title = $"{title} imaginary"}
+            };
+            var magnitudePlot = new SeriesCollection
+            {
+                new LiveCharts.Wpf.LineSeries {Values = new ChartValues<double>(magnitudeValues), Title = $"{title} mag"}
+            };
+            var phasePlot = new SeriesCollection
+            {
+                new LiveCharts.Wpf.LineSeries {Values = new ChartValues<double>(phaseValues), Title = $"{title} phase"}
             };
 
 
-            return new Plot(realPlot, imaginaryPlot, signal, labels.ToArray());
+            return new Plot(signal, labels.ToArray(), frequencyLabels, (realPlot, imaginaryPlot), (magnitudePlot, phasePlot));
         }
 
         private void AddNewPlot()
@@ -449,105 +424,17 @@ namespace PlotsVisualizer.ViewModels
 
         private void SimpleFourier()
         {
-            var signal = SignalGeneration.signalGenerator(new Types.SignalMetadata(
-                    SignalType, IsContinous, 8, 0, 8, DutyCycle,
-                    signalFrequency: 4, samplingFrequency: 16));
-            //var signal = SignalGeneration.signalGenerator(new Types.SignalMetadata(
-            //    SignalType, IsContinous, 2, Math.PI / 2.0, Duration, DutyCycle,
-            //    Math.PI, 16));
-            //var signal2 = SignalGeneration.signalGenerator(new Types.SignalMetadata(
-            //    SignalType, IsContinous, 5, Math.PI / 2.0, Duration, DutyCycle,
-            //    Math.PI / 2.0, 16));
-            //signal = Operations.add(signal2, signal);
-            AddPlot(CreatePlot(signal, "base"));
-
+            var signal = CurrentPlot.Signal;
             var points = signal.points;
-
-            //var xVector = CreateVector.DenseOfEnumerable(points.Select(p => p.y));
-
-            //var Wn = new Complex(Math.E, 0.0).Power(
-            //    new Complex(0.0, (2.0 * Math.PI) / (double)points.Length));
-
-            //var f = CreateMatrix.Dense<Complex>(points.Length, points.Length);
-
-            //for (int r = 0; r < points.Length; r++)
-            //{
-            //    for (int c = 0; c < points.Length; c++)
-            //    {
-            //        f[r, c] = Wn.Power(-1.0 * (r * c));
-            //    }
-            //}
-
-            //var result = 1.0 / points.Length
-            //             * f
-            //             * xVector;
-            //var newSignal = new Types.Signal(
-            //    signal.metadata,
-            //    ListModule.OfSeq(
-            //        signal.points.Zip(
-            //            result,
-            //            (p, r) => new Types.Point(p.x, r)))
-            //    );
-
-            //AddPlot(CreatePlot(newSignal, "naive fourier inside"));
-
-            //var newNaiveSignal = new Types.Signal(
-            //    signal.metadata,
-            //    ListModule.OfSeq(
-            //        Fourier.FrequencyScale(points.Length, signal.metadata.samplingFrequency).Zip(
-            //            ComputeFourier(xVector.ToArray()),
-            //            (p, r) => new Types.Point(p, r)))
-            //);
-            //AddPlot(CreatePlot(newNaiveSignal, "Naive lib fourier"));
-
 
             var newQuickSignal = new Types.Signal(
                 signal.metadata,
                 ListModule.OfSeq(
-                    signal.points.Zip(
-                        Fft(points.Select(p => p.y).ToList()),
-                        (p, r) => new Types.Point(p.x, r)))
-            );
-            AddPlot(CreatePlot(newQuickSignal, "our quick Fourier"));
-
-            //var newQuickSignalFreq = new Types.Signal(
-            //    signal.metadata,
-            //    ListModule.OfSeq(
-            //        Fourier.FrequencyScale(points.Length, signal.metadata.samplingFrequency).Zip(
-            //            Fft(points.Select(p => p.y).ToList()),
-            //            (p, r) => new Types.Point(p, r)))
-            //);
-            //AddPlot(CreatePlot(newQuickSignalFreq, "Our quick Fourier with freq scale"));
-
-            var input = CreateVector.DenseOfEnumerable(points.Select(p => p.y)).ToArray();
-            Fourier.Forward(input);
-            var sth = new Types.Signal(
-                signal.metadata,
-                ListModule.OfSeq(
-                    Fourier.FrequencyScale(points.Length, signal.metadata.samplingFrequency).Zip(
-                        input,
+                    GenerateFrequencyScale(points.Length, signal.metadata.samplingFrequency).Zip(
+                        ComputeFourier(points.Select(p => p.y).ToArray()),
                         (p, r) => new Types.Point(p, r)))
             );
-            AddPlot(CreatePlot(sth, "Lib quick Fourier"));
-
-            var input2 = CreateVector.DenseOfEnumerable(points.Select(p => p.y)).ToArray();
-            var sth2 = new Types.Signal(
-                signal.metadata,
-                ListModule.OfSeq(
-                    Fourier.FrequencyScale(points.Length, signal.metadata.samplingFrequency).Zip(
-                        RecursiveFFT(input2),
-                        (p, r) => new Types.Point(p, r)))
-            );
-            AddPlot(CreatePlot(sth2, "magic quick Fourier with freq scale"));
-            var input3 = CreateVector.DenseOfEnumerable(points.Select(p => p.y)).ToArray();
-            var sth3 = new Types.Signal(
-                signal.metadata,
-                ListModule.OfSeq(
-                    signal.points.Zip(
-                        RecursiveFFT(input3),
-                        (p, r) => new Types.Point(p.x, r)))
-            );
-            AddPlot(CreatePlot(sth3, "magic quick Fourierout"));
+            AddPlot(CreatePlot(newQuickSignal, "DFT"));
         }
 
         public Complex[] ComputeFourier(Complex[] input)
@@ -555,10 +442,10 @@ namespace PlotsVisualizer.ViewModels
             int n = input.Length;
             Complex[] output = new Complex[n];
             for (int k = 0; k < n; k++)
-            {  
+            {
                 Complex sum = 0;
                 for (int t = 0; t < n; t++)
-                {  
+                {
                     double angle = 2 * Math.PI * t * k / n;
                     sum += input[t] * Complex.Exp(new Complex(0, -angle));
                 }
@@ -567,6 +454,20 @@ namespace PlotsVisualizer.ViewModels
             return output;
         }
 
+        private void FFT()
+        {
+            var signal = CurrentPlot.Signal;
+            var points = signal.points;
+
+            var newQuickSignal = new Types.Signal(
+                signal.metadata,
+                ListModule.OfSeq(
+                    GenerateFrequencyScale(points.Length, signal.metadata.samplingFrequency).Zip(
+                        RecursiveFFT(points.Select(p => p.y).ToArray()),
+                        (p, r) => new Types.Point(p, r)))
+            );
+            AddPlot(CreatePlot(newQuickSignal, "FFT"));
+        }
 
         public static Complex[] RecursiveFFT(Complex[] a)
         {
@@ -576,15 +477,13 @@ namespace PlotsVisualizer.ViewModels
             if (n == 1)
                 return a;
 
-            Complex z = new Complex(0.0, 2.0 * Math.PI / n);
-            Complex omegaN = Complex.Exp(z);
-            Complex omega = new Complex(1.0, 0.0);
             Complex[] a0 = new Complex[n2];
             Complex[] a1 = new Complex[n2];
             Complex[] y0 = new Complex[n2];
             Complex[] y1 = new Complex[n2];
             Complex[] y = new Complex[n];
 
+            //divide into even and odd
             for (int i = 0; i < n2; i++)
             {
                 a0[i] = new Complex(0.0, 0.0);
@@ -593,9 +492,13 @@ namespace PlotsVisualizer.ViewModels
                 a1[i] = a[2 * i + 1];
             }
 
+            //calc halves
             y0 = RecursiveFFT(a0);
             y1 = RecursiveFFT(a1);
 
+            Complex z = new Complex(0.0, 2.0 * Math.PI / n);
+            Complex omegaN = Complex.Exp(z);
+            Complex omega = new Complex(1.0, 0.0);
             for (int k = 0; k < n2; k++)
             {
                 y[k] = new Complex(0.0, 0.0);
@@ -608,74 +511,58 @@ namespace PlotsVisualizer.ViewModels
             return y;
         }
 
-        public static int BitReverse(int n, int bits)
+        private void WaveletTransformation()
         {
-            int reversedN = n;
-            int count = bits - 1;
+            var result = Db8(Extreme.Mathematics.Vector.Create(CurrentPlot.Signal.points.Select(p => p.y.Real).ToArray()));
+            AddPlot(
+                CreatePlot(new Types.Signal(
+                    CurrentPlot.Signal.metadata,
+                    ListModule.OfSeq(
+                        result.Item1.Zip(
+                            Enumerable.Range(0, result.Item1.Count),
+                            (p, i) => new Types.Point(i, new Complex(p, 0.0))))),
+                    "Wavelet transform 1"
+                    ));
 
-            n >>= 1;
-            while (n > 0)
-            {
-                reversedN = (reversedN << 1) | (n & 1);
-                count--;
-                n >>= 1;
-            }
-
-            return ((reversedN << count) & ((1 << bits) - 1));
+            AddPlot(
+                CreatePlot(new Types.Signal(
+                        CurrentPlot.Signal.metadata,
+                        ListModule.OfSeq(
+                            result.Item2.Zip(
+                                Enumerable.Range(0, result.Item2.Count),
+                                (p, i) => new Types.Point(i, new Complex(p, 0.0))))),
+                    "Wavelet transform 2"
+                ));
         }
 
-        /* Uses Cooley-Tukey iterative in-place algorithm with radix-2 DIT case
-         * assumes no of points provided are a power of 2 */
-        public static Complex[] FFT(Complex[] buffer)
+        private static readonly Extreme.Mathematics.Vector<double> HDB8 = Extreme.Mathematics.Vector.Create(new[]
         {
-            int size = 1024;
-            var xEx = new Complex[size];
-            for (int i = 0; i < buffer.Length; i++)
-            {
-                xEx[i] = buffer[i];
-            }
-            for (int i = buffer.Length; i < size; i++)
-            {
-                xEx[i] = new Complex(0.0, 0.0);
-            }
-            buffer = xEx;
-            int bits = (int)Math.Log(buffer.Length, 2);
-            for (int j = 1; j < buffer.Length / 2; j++)
-            {
+            0.32580343, 1.01094572,
+            0.8922014, -0.03957503,
+            -0.26450717, 0.0436163,
+            0.0465036, -0.01498699
+        });
 
-                int swapPos = BitReverse(j, bits);
-                var temp = buffer[j];
-                buffer[j] = buffer[swapPos];
-                buffer[swapPos] = temp;
-            }
+        private static readonly Extreme.Mathematics.Vector<double> G8 = Extreme.Mathematics.Vector.Create(new[]
+        {
+            HDB8[7],
+            -HDB8[6],
+            HDB8[5],
+            -HDB8[4],
+            HDB8[3],
+            -HDB8[2],
+            HDB8[1],
+            -HDB8[0],
+        });
 
-            for (int N = 2; N <= buffer.Length; N <<= 1)
-            {
-                for (int i = 0; i < buffer.Length; i += N)
-                {
-                    for (int k = 0; k < N / 2; k++)
-                    {
+        private (List<double>, List<double>) Db8(Extreme.Mathematics.Vector<double> xs)
+        {
+            var H = Extreme.Mathematics.Vector.Convolution<double>(xs, HDB8);
+            var G = Extreme.Mathematics.Vector.Convolution<double>(xs, G8);
 
-                        int evenIndex = i + k;
-                        int oddIndex = i + k + (N / 2);
-                        var even = buffer[evenIndex];
-                        var odd = buffer[oddIndex];
-
-                        double term = -2 * Math.PI * k / (double)N;
-                        Complex exp = new Complex(Math.Cos(term), Math.Sin(term)) * odd;
-
-                        buffer[evenIndex] = even + exp;
-                        buffer[oddIndex] = even - exp;
-
-                    }
-                }
-            }
-            Debug.WriteLine("Results:");
-            foreach (Complex c in buffer)
-            {
-                Console.WriteLine(c);
-            }
-            return buffer;
+            var x1 = H.Where((p, i) => i % 2 == 0).ToList();
+            var x2 = G.Where((p, i) => i % 2 != 0).ToList();
+            return (x1, x2);
         }
 
         // ReSharper disable once InconsistentNaming
@@ -703,60 +590,24 @@ namespace PlotsVisualizer.ViewModels
             {
                 return new Complex(Math.Cos(value), Math.Sin(value));
             }
-            /*
-             *
-            def fft(X):
-                N = len(X)
-                half = N // 2
-                if N > 1:
-                    X = fft(X[::2]) + fft(X[1::2])
-                    for k in range(N//2):
-                        xk = X[k]
-                        kernel = iexp(-2*math.pi*k/N)
-                        c = kernel * X[k+half]
-                        X[k] = xk + c
-                        X[k+half] = xk - c
-                return X
-             */
         }
-        #region extrapolation
 
-        //private void GenerateFilter()
-        //{
-        //    Types.Signal filter = Filters.createFilter(FilterType,
-        //        WindowFunction,
-        //        FilterOrder,
-        //        FilterCutOffFrequency,
-        //        SamplingFrequency);
-        //    AddPlot(
-        //        CreatePlot(filter.points, $"Filter: {FilterType} {WindowFunction} M: {FilterOrder}"),
-        //        filter);
-        //}
+        private void SwitchW()
+        {
+            CurrentPlot?.SwitchW();
+            CurrentPlot = CurrentPlot;
+        }
 
-        //private void Convolute()
-        //{
-        //    if (FirstChosenPlot > PlotsCount || SecondChosenPlot > PlotsCount)
-        //    {
-        //        MessageBox.Show($"Invalid plots indexes. Maximum plot index is: {PlotsCount}");
-        //        return;
-        //    }
+        private double[] GenerateFrequencyScale(int pointsLength, double samplingFrequency)
+        {
+            var f0 = samplingFrequency / pointsLength;
+            var labels = new double[pointsLength];
+            for (int i = 0; i < pointsLength; i++)
+            {
+                labels[i] = i * f0;
+            }
 
-        //    if (FirstChosenPlot == SecondChosenPlot)
-        //    {
-        //        MessageBox.Show($"Choose two different plots.");
-        //        return;
-        //    }
-
-        //    var first = Plots[FirstChosenPlot].Signal;
-        //    var second = Plots[SecondChosenPlot].Signal;
-
-        //    var convoluted = Convolution.convolute(first,second);
-
-        //    AddPlot(
-        //        CreatePlot(convoluted.points, "convoluted plot"),
-        //        convoluted);
-        //}
-
-        #endregion
+            return labels;
+        }
     }
 }
